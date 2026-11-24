@@ -868,18 +868,23 @@ const GAMES = {
       const wEl = el("div", "scr"); const lives = el("p", "prog"); const msg = el("p", "msg"); const kb = el("div", "kb");
       const paint = () => { wEl.textContent = word.split("").map((ch) => (got.has(ch) ? ch : "_")).join(" "); lives.textContent = "Chances left: " + "❤️".repeat(6 - wrong) + "🤍".repeat(wrong); };
       paint();
+      const keyBtn = {}; const help = el("button", "btn help", "💡 Help!"); help.type = "button"; help.disabled = true; help.setAttribute("aria-label", "Help (opens after 3 wrong letters)");
+      help.addEventListener("click", () => {
+        const miss = word.split("").find((c) => !got.has(c)); if (!miss || !keyBtn[miss]) return;
+        msg.className = "msg ok"; msg.textContent = "💡 Here is a letter for you: " + miss; keyBtn[miss].click();
+      });
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach((ch) => {
-        const b = el("button", "key", ch); b.type = "button";
+        const b = el("button", "key", ch); b.type = "button"; keyBtn[ch] = b;
         b.addEventListener("click", () => {
           b.disabled = true;
-          if (word.includes(ch)) { got.add(ch); b.classList.add("ok"); } else { wrong++; b.classList.add("bad"); }
+          if (word.includes(ch)) { got.add(ch); b.classList.add("ok"); } else { wrong++; b.classList.add("bad"); if (wrong >= 3 && help.disabled) { help.disabled = false; help.classList.add("ready"); } }
           paint();
-          if (word.split("").every((c) => got.has(c))) { msg.className = "msg ok"; msg.textContent = "Yes! " + word; if (slug) box.append(pic(slug)); kb.querySelectorAll("button").forEach((x) => x.disabled = true); setTimeout(() => { wi++; play(); }, 2200); }
-          else if (wrong >= 6) { msg.className = "msg bad"; msg.textContent = "The word was " + word + ". Try again!"; kb.querySelectorAll("button").forEach((x) => x.disabled = true); setTimeout(play, 1800); }
+          if (word.split("").every((c) => got.has(c))) { msg.className = "msg ok"; msg.textContent = "Yes! " + word; if (slug) box.append(pic(slug)); kb.querySelectorAll("button").forEach((x) => x.disabled = true); help.disabled = true; help.classList.remove("ready"); setTimeout(() => { wi++; play(); }, 2200); }
+          else if (wrong >= 6) { msg.className = "msg bad"; msg.textContent = "The word was " + word + ". Try again!"; kb.querySelectorAll("button").forEach((x) => x.disabled = true); help.disabled = true; help.classList.remove("ready"); setTimeout(play, 1800); }
         });
         kb.appendChild(b);
       });
-      box.append(prog, hintEl, wEl, lives, kb, msg);
+      box.append(prog, hintEl, wEl, lives, kb, help, msg);
     };
     play();
   },
@@ -907,13 +912,24 @@ const GAMES = {
     const clues = el("div", "clues");
     W.forEach((w) => { const p = el("p", "clue", w.n + " " + (w.dir === "A" ? "across" : "down") + ": " + w.clue); if (w.img) p.prepend(pic(w.img, "cimg")); clues.appendChild(p); });
     const msg = el("p", "msg"); const go = el("button", "btn primary", "Check"); go.type = "button";
+    let fails = 0; const help = el("button", "btn help", "💡 Help!"); help.type = "button"; help.disabled = true; help.setAttribute("aria-label", "Help (opens after 3 wrong checks)");
     go.addEventListener("click", () => {
       let good = 0;
       inputs.forEach(([i, ch]) => { i.classList.remove("ok", "bad"); if (i.value === ch) { i.classList.add("ok"); good++; } else if (i.value) i.classList.add("bad"); });
-      if (good === inputs.length) { msg.className = "msg ok"; msg.textContent = "The crossword is complete!"; finish(); }
-      else { msg.className = "msg bad"; msg.textContent = good + " of " + inputs.length + " letters are correct. Keep going!"; }
+      if (good === inputs.length) { msg.className = "msg ok"; msg.textContent = "The crossword is complete!"; help.disabled = true; help.classList.remove("ready"); finish(); }
+      else {
+        fails++; msg.className = "msg bad"; msg.textContent = good + " of " + inputs.length + " letters are correct. Keep going!";
+        if (fails >= 3 && help.disabled) { help.disabled = false; help.classList.add("ready"); msg.textContent += " You can press Help! 💡"; }
+      }
     });
-    body.append(sc, clues, go, msg);
+    help.addEventListener("click", () => {
+      const t = inputs.find(([i, ch]) => i.value !== ch); if (!t) return;
+      t[0].value = t[1]; t[0].classList.remove("bad"); t[0].classList.add("ok");
+      msg.className = "msg ok"; msg.textContent = "💡 I filled in one letter for you!";
+      if (inputs.every(([i, ch]) => i.value === ch)) go.click();
+    });
+    const btns = el("div", "padtools"); btns.append(go, help);
+    body.append(sc, clues, btns, msg);
   },
 
   order(body, d, finish) {
