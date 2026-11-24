@@ -626,9 +626,19 @@ function answerBox(body, check, onOk, helpText) {
   if (helpText) {
     helpBtn = el("button", "btn help", "💡 Help!"); helpBtn.type = "button"; helpBtn.disabled = true;
     helpBtn.setAttribute("aria-label", "Help (opens after 3 wrong tries)");
+    let shown = 0; const full = String(helpText).toUpperCase();
     helpBtn.addEventListener("click", () => {
-      msg.className = "msg ok"; msg.textContent = "💡 The answer is: " + helpText.toUpperCase() + ". Now type it!";
-      inp.value = ""; inp.focus(); helpBtn.disabled = true; helpBtn.classList.remove("ready");
+      shown = Math.min(shown + 1, full.length);
+      helpBtn.classList.remove("ready");
+      msg.className = "msg ok";
+      if (shown < full.length) {
+        msg.textContent = "💡 Hint: " + full.slice(0, shown) + "_".repeat(full.length - shown) + " (press Help! for the next letter)";
+        helpBtn.disabled = false; helpBtn.classList.add("ready");
+      } else {
+        msg.textContent = "💡 The answer is: " + full + ". Now type it!";
+        helpBtn.disabled = true;
+      }
+      inp.focus();
     });
     row.appendChild(helpBtn);
   }
