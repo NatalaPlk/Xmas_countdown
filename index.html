@@ -1,0 +1,1114 @@
+<title>Christmas Countdown</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap">
+<style>
+/* Layout: cabecera centrada con progreso, rejilla 5x5 de tarjetas pastel ilustradas, ventana modal para cada juego o premio */
+:root {
+  --bg: #E6F3FF;
+  --surface: #FFFFFF;
+  --ink: #12233F;
+  --muted: #4A5F80;
+  --line: #B9D3EE;
+  --berry: #E8173F;
+  --pine: #0FA34A;
+  --gold: #FFB300;
+  --sky: #1E8CFF;
+  --p1: #C8F2CF; --b1: #4CC070;
+  --p2: #FFDDB0; --b2: #FFA94D;
+  --p3: #BFE3FF; --b3: #4DA9F5;
+  --p4: #FFCCD8; --b4: #FF7C9A;
+  --p5: #FFF2A0; --b5: #F2C21B;
+  --font-display: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1B38; --surface: #14305C; --ink: #F2F7FF; --muted: #A9C0E2; --line: #2A4F88;
+    --berry: #FF4466; --pine: #2EE073; --gold: #FFC933; --sky: #4DAAFF;
+    --p1: #14522E; --b1: #3FD477;
+    --p2: #6B4012; --b2: #FFA94D;
+    --p3: #14427A; --b3: #4DAAFF;
+    --p4: #6B1B33; --b4: #FF6F90;
+    --p5: #5D4C0A; --b5: #FFD23F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1B38; --surface: #14305C; --ink: #F2F7FF; --muted: #A9C0E2; --line: #2A4F88;
+  --berry: #FF4466; --pine: #2EE073; --gold: #FFC933; --sky: #4DAAFF;
+  --p1: #14522E; --b1: #3FD477;
+  --p2: #6B4012; --b2: #FFA94D;
+  --p3: #14427A; --b3: #4DAAFF;
+  --p4: #6B1B33; --b4: #FF6F90;
+  --p5: #5D4C0A; --b5: #FFD23F;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-block: 28px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 24px; }
+header { text-align: center; display: grid; gap: 8px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(2rem, 7vw, 3.1rem); line-height: 1.05; margin: 0; text-wrap: balance; }
+h1 span { color: var(--berry); }
+.status { margin: 0; color: var(--muted); font-weight: 600; text-wrap: balance; }
+.progress { display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: .9rem; color: var(--muted); }
+.bar { width: 160px; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--pine); transition: width .4s; }
+.teacher { display: none; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; border: 2px dashed var(--gold); border-radius: 12px; font-size: .9rem; }
+.teacher.on { display: flex; }
+.teacher button { font: inherit; font-weight: 700; padding: 6px 12px; border-radius: 8px; border: 2px solid var(--ink); background: var(--surface); color: var(--ink); cursor: pointer; }
+
+/* Tablero: la imagen es el calendario; cada casilla es un botón encima de su número */
+.board { position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+.board img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+.hots { position: absolute; inset: 0; }
+.hot { position: absolute; transform: translate(-50%, -50%); width: 9.2%; height: 12.2%; padding: 0; border: 0; background: none; border-radius: 16px; cursor: pointer; display: grid; place-items: center; color: var(--ink); }
+.hot:hover:not(.locked) { background: rgba(255,255,255,.2); }
+.hot:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.hot.locked { cursor: not-allowed; }
+.hot.locked::before { content: ""; position: absolute; inset: 0; border-radius: 16px; background: rgba(10,30,50,.35); }
+.hot.locked::after { content: "🔒"; position: absolute; right: -2%; bottom: -4%; font-size: clamp(.8rem, 2.8vw, 1.3rem); }
+.hot.today { box-shadow: 0 0 0 3px var(--gold); animation: glow 1.8s ease-in-out infinite; }
+.hot .ic { width: 70%; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.92); box-shadow: 0 2px 6px rgba(0,0,0,.3); font-size: clamp(1rem, 4vw, 2rem); line-height: 1; }
+.hot .ok, .hot .ok { position: absolute; right: 6%; top: 6%; }
+.hot.big { width: 27%; height: 24%; border-radius: 28px; }
+.hot.big .ic { width: auto; height: 62%; }
+.hot.big.locked::before { border-radius: 28px; }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 0 3px var(--gold); } 50% { box-shadow: 0 0 0 7px rgba(255,200,40,.35); } }
+
+.modal { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 16px; background: rgba(8, 14, 26, .6); }
+.card { width: min(480px, 100%); max-height: 100%; overflow: auto; background: var(--surface); border-radius: 20px; padding: 22px; display: grid; gap: 14px; border: 2px solid var(--line); position: relative; }
+.card .kicker { margin: 0; font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--berry); }
+.card h2 { font-family: var(--font-display); margin: 0; font-size: 1.5rem; line-height: 1.15; text-wrap: balance; padding-right: 40px; }
+.card p { margin: 0; }
+.x { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--line); background: var(--bg); color: var(--ink); font-size: 1.1rem; cursor: pointer; }
+.big { font-size: 4rem; text-align: center; line-height: 1; }
+.opts { display: grid; gap: 8px; }
+.btn { font: inherit; font-weight: 700; padding: 11px 14px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; text-align: left; }
+.btn:hover:not(:disabled) { border-color: var(--sky); }
+.btn.ok { border-color: var(--pine); background: color-mix(in srgb, var(--pine) 22%, var(--surface)); }
+.btn.bad { border-color: var(--berry); opacity: .6; }
+.btn.primary { background: var(--berry); border-color: var(--berry); color: #fff; text-align: center; text-decoration: none; display: block; }
+.row { display: flex; gap: 8px; }
+.row input { flex: 1; min-width: 0; font: inherit; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); }
+.row .btn { text-align: center; }
+.scr { font-family: var(--font-display); font-weight: 700; font-size: 2.2rem; letter-spacing: .25em; text-align: center; color: var(--sky); }
+.msg { min-height: 1.5em; font-weight: 700; }
+.msg.ok { color: var(--pine); }
+.msg.bad { color: var(--berry); }
+.mem { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.mc { aspect-ratio: 1; border-radius: 12px; border: 2px solid var(--sky); background: var(--sky); color: transparent; font-size: 1.8rem; cursor: pointer; display: grid; place-items: center; padding: 0; }
+.mc.up { background: var(--bg); color: inherit; }
+.mc.hit { background: color-mix(in srgb, var(--pine) 25%, var(--surface)); border-color: var(--pine); color: inherit; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 30; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-weight: 700; font-size: .9rem; max-width: calc(100% - 32px); text-align: center; }
+.seq { display: grid; gap: 12px; }
+.chal { color: var(--berry); font-weight: 700; font-size: .9rem; }
+.prog { font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.qq { font-size: 1.15rem; font-weight: 700; }
+.qq.big2 { font-size: 2.6rem; text-align: center; line-height: 1.2; }
+.opts.emo { grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); }
+.opts.emo .btn { font-size: 2rem; text-align: center; padding: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { padding: 3px 10px; border-radius: 99px; border: 2px solid var(--line); font-weight: 700; font-size: .85rem; }
+.chip.got { border-color: var(--pine); background: color-mix(in srgb, var(--pine) 22%, var(--surface)); text-decoration: line-through; }
+.ws { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; }
+.wc { aspect-ratio: 1; min-width: 0; padding: 0; border: 0; border-radius: 6px; background: var(--bg); color: var(--ink); font: 700 .95rem var(--font-display); cursor: pointer; }
+.wc.sel { background: var(--gold); color: #12233F; }
+.wc.fnd { background: var(--pine); color: #fff; }
+.mt { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mcol { display: grid; gap: 8px; align-content: start; }
+.mtb { text-align: center; font-size: 1.1rem; }
+.btn.sel { border-color: var(--sky); background: color-mix(in srgb, var(--sky) 22%, var(--surface)); }
+.scn { width: 100%; height: auto; border-radius: 12px; border: 2px solid var(--line); cursor: crosshair; display: block; }
+.emoset { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; font-size: 2.4rem; min-height: 3.4rem; }
+.kb { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+.key { width: 2.1rem; height: 2.3rem; border-radius: 8px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); font: 700 1rem var(--font-body); cursor: pointer; padding: 0; }
+.key.ok { background: var(--pine); border-color: var(--pine); color: #fff; }
+.key.bad { opacity: .35; }
+.xs { overflow-x: auto; }
+.xw { display: grid; gap: 2px; min-width: 330px; }
+.xe { aspect-ratio: 1; }
+.xc { position: relative; aspect-ratio: 1; }
+.xc input { width: 100%; height: 100%; min-width: 0; padding: 0; text-align: center; text-transform: uppercase; font: 700 1rem var(--font-display); border: 2px solid var(--ink); border-radius: 4px; background: var(--surface); color: var(--ink); }
+.xc input.ok { background: color-mix(in srgb, var(--pine) 25%, var(--surface)); }
+.xc input.bad { background: color-mix(in srgb, var(--berry) 25%, var(--surface)); }
+.xn { position: absolute; top: 1px; left: 3px; z-index: 1; font-size: .6rem; font-weight: 700; color: var(--berry); pointer-events: none; }
+.clues { display: grid; gap: 2px; font-size: .92rem; }
+.ord { margin: 0; padding-left: 1.3rem; display: grid; gap: 4px; font-weight: 700; }
+.steps { margin: 0; padding-left: 1.3rem; display: grid; gap: 4px; }
+.story { padding: 12px 14px; border-radius: 12px; background: var(--bg); font-style: italic; }
+.tpl { width: 100%; font: inherit; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); resize: vertical; }
+.cert { text-align: center; padding: 18px; border: 4px double var(--gold); border-radius: 14px; background: var(--bg); display: grid; gap: 4px; }
+.cert .ct { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; color: var(--berry); }
+.cert .cs { font-weight: 700; }
+.cert .cn { font-family: var(--font-display); font-size: 2rem; font-weight: 700; overflow-wrap: anywhere; }
+.cert .cm { font-weight: 700; color: var(--pine); margin-top: 6px; }
+.qirow { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.qimg { width: 110px; height: 110px; object-fit: contain; border-radius: 16px; background: #fff; }
+.plus { font: 700 2rem var(--font-display); color: var(--ink); }
+.pic { display: block; width: 100%; max-width: 190px; aspect-ratio: 1; object-fit: contain; margin: 0 auto; border-radius: 16px; background: #fff; }
+.vstrip { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.vstrip figure { margin: 0; width: 78px; text-align: center; font-size: .72rem; font-weight: 700; display: grid; gap: 2px; }
+.vimg { width: 78px; height: 78px; object-fit: contain; border-radius: 10px; background: #fff; }
+.cimg { width: 42px; height: 42px; object-fit: contain; border-radius: 8px; background: #fff; vertical-align: middle; margin-right: 8px; }
+.clue { display: flex; align-items: center; gap: 0; }
+.oimg { display: block; width: 100%; max-width: 100px; aspect-ratio: 1; object-fit: contain; border-radius: 10px; background: #fff; }
+.btn.imgb { display: grid; justify-items: center; gap: 4px; padding: 6px; text-align: center; }
+.opts.pics { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); }
+.mc img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; visibility: hidden; }
+.mc.up img, .mc.hit img { visibility: visible; }
+.mc { overflow: hidden; }
+.chip .cimg { width: 26px; height: 26px; margin-right: 4px; }
+.emoset { align-items: center; }
+.instr { font: 700 1.3rem/1.3 var(--font-display); margin: 0; }
+.chip.now { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 28%, var(--surface)); }
+.stage { display: grid; gap: 12px; }
+.bowl { min-height: 96px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; padding: 12px 18px 22px; border-radius: 0 0 999px 999px; background: color-mix(in srgb, var(--sky) 18%, var(--surface)); border: 3px solid var(--sky); border-top-width: 7px; }
+.bimg { width: 54px; height: 54px; object-fit: contain; border-radius: 10px; background: #fff; }
+.bimg.big { width: 120px; height: 120px; }
+.bowl.stir { animation: stir .35s ease; }
+@keyframes stir { 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+.bar2 { height: 12px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar2 i { display: block; height: 100%; width: 0; background: var(--gold); transition: width .2s; }
+.tray { display: flex; flex-wrap: wrap; gap: 6px; min-height: 70px; padding: 8px; border-radius: 12px; border: 3px dashed var(--line); justify-content: center; align-items: center; }
+.timer { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.timer .key { width: 3rem; height: 3rem; font-size: 1.5rem; }
+.tval { font: 700 2rem var(--font-display); min-width: 5ch; text-align: center; font-variant-numeric: tabular-nums; }
+.pic.baking { animation: oven 1s ease-in-out infinite; }
+@keyframes oven { 50% { box-shadow: 0 0 0 6px var(--gold), 0 0 26px var(--gold); } }
+.cookies { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.ck { position: relative; padding: 0; border: 0; background: none; cursor: pointer; animation: pop .45s backwards; }
+.ck:nth-child(2) { animation-delay: .08s; } .ck:nth-child(3) { animation-delay: .16s; } .ck:nth-child(4) { animation-delay: .24s; } .ck:nth-child(5) { animation-delay: .32s; } .ck:nth-child(6) { animation-delay: .4s; }
+.ckimg { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 50%; background: #fff; filter: grayscale(.75) brightness(1.1); transition: filter .3s; }
+.ck.iced .ckimg { filter: none; }
+.ck.iced::after { content: "✨"; position: absolute; top: 2px; right: 6px; font-size: 1.4rem; }
+@keyframes pop { from { transform: scale(.3); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .bowl.stir, .pic.baking, .ck { animation: none; } }
+footer { text-align: center; color: var(--muted); font-size: .85rem; }
+@media (prefers-reduced-motion: reduce) { .hot.today { animation: none; } .bar i { transition: none; } }
+
+/* ---------- Festive game card (light, with holly frame) ---------- */
+.modal { background: radial-gradient(circle at 50% 0%, rgba(22, 100, 66, .6), rgba(4, 18, 14, .88)); }
+.modal::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .55;
+  background-image: radial-gradient(circle, #fff 1.6px, transparent 2.2px), radial-gradient(circle, #fff 1px, transparent 1.7px);
+  background-size: 90px 110px, 140px 130px; background-position: 0 0, 40px 60px; animation: snowfall 16s linear infinite; }
+@keyframes snowfall { to { background-position: 30px 110px, 20px 190px; } }
+.card { position: relative; z-index: 1; color: #23382B; border: 4px solid #fff; border-radius: 28px; padding: 54px 40px 56px;
+  outline: 3px dashed rgba(47, 158, 99, .45); outline-offset: -14px;
+  background: radial-gradient(circle at 85% 10%, rgba(255, 213, 90, .22), transparent 40%), radial-gradient(circle at 10% 90%, rgba(230, 57, 80, .08), transparent 40%), #FFFDF6;
+  box-shadow: 0 12px 44px rgba(0, 0, 0, .55), 0 0 0 6px #2F9E63, 0 0 36px rgba(255, 213, 90, .4); }
+.card p { color: #23382B; }
+.deco { position: absolute; pointer-events: none; z-index: 1; background-repeat: no-repeat; background-position: center; background-size: contain; }
+.card .kicker { justify-self: start; display: inline-block; margin-left: 38px; padding: 5px 16px; border-radius: 8px; border: 2px solid #FFC53D; color: #fff;
+  font-size: .78rem; letter-spacing: .12em; background: linear-gradient(#E94860, #B71C30); box-shadow: 0 3px 0 #7A1020; text-shadow: 0 1px 1px rgba(0, 0, 0, .4); }
+.card .kicker::before { content: "★ "; color: #FFD45A; }
+.card h2 { font-size: 1.85rem; line-height: 1.1; color: #C41E35; text-shadow: 2px 2px 0 #FFD45A; }
+.card .chal { color: #1E7A3C; font-weight: 700; }
+.card .chal::before { content: "★ "; color: #E59A0C; }
+.card .prog { justify-self: start; display: inline-block; padding: 3px 12px; border-radius: 99px; color: #fff; border: 2px solid #B71C30; letter-spacing: .1em;
+  background: repeating-linear-gradient(135deg, #D7263D 0 10px, #B71C30 10px 20px); text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+.card .qq { color: #23382B; }
+.card .scr { color: #C41E35; text-shadow: 2px 2px 0 #FFD45A; }
+.card .instr { color: #1B5C3A; }
+.card .tval { color: #C41E35; }
+.card .plus { color: #1E7A3C; }
+.card .msg.ok { color: #1E7A3C; }
+.card .msg.bad { color: #C41E35; }
+.card .x { top: 14px; right: 14px; z-index: 3; color: #fff; font-weight: 700; border: 3px solid #2F9E63;
+  background: radial-gradient(circle at 35% 30%, #F0495F, #B71C30); box-shadow: 0 2px 6px rgba(0, 0, 0, .35); }
+.card .pic, .card .vimg, .card .oimg, .card .qimg, .card .bimg, .card .cimg { border: 3px solid #CDEBD8; border-radius: 14px; box-shadow: 0 2px 6px rgba(35, 56, 43, .15); }
+.card .cimg { border-width: 2px; box-shadow: none; }
+.card .btn { background: #fff; color: #23382B; border: 3px solid #2F9E63; border-radius: 14px; box-shadow: 0 4px 0 #1E7A4A; transition: transform .12s, box-shadow .12s; }
+.card .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 0 #1E7A4A; border-color: #E59A0C; }
+.card .btn.sel { background: #FFF1B8; border-color: #E59A0C; }
+.card .btn.ok { background: #C9F2D4; border-color: #1E9A47; box-shadow: 0 4px 0 #0F6B2E; }
+.card .btn.bad { background: #FFD9DE; border-color: #D7263D; box-shadow: 0 4px 0 #9E1226; opacity: 1; animation: shake .35s; }
+.card .btn.primary { color: #fff; background: linear-gradient(#F0495F, #C41E35); border-color: #A8122A; text-shadow: 0 1px 1px rgba(0, 0, 0, .4);
+  box-shadow: 0 4px 0 #7A1020, inset 0 2px 0 rgba(255, 255, 255, .35); }
+.card .btn:disabled { opacity: .85; }
+.card .row input, .card .tpl { background: #fff; color: #23382B; border: 3px solid #2F9E63; border-radius: 14px; }
+.card .chip { background: #F1FAF4; color: #23382B; border: 2px solid #2F9E63; }
+.card .chip.got { background: #C9F2D4; border-color: #1E9A47; }
+.card .chip.now { background: #FFF1B8; border-color: #E59A0C; }
+.card .key { background: #fff; color: #23382B; border: 2px solid #2F9E63; box-shadow: 0 2px 0 #1E7A4A; }
+.card .key.ok { background: #2CB352; border-color: #0F6B2E; color: #fff; }
+.card .key.bad { opacity: .4; }
+.card .mc { border: 3px solid #2F9E63; background: repeating-linear-gradient(45deg, #E63950 0 10px, #fff 10px 20px); }
+.card .mc:not(.up):not(.hit)::after { content: "★"; color: #E59A0C; font-size: 1.7rem; text-shadow: 0 0 3px #fff, 0 0 3px #fff; }
+.card .mc.up { background: #fff; }
+.card .mc.hit { background: #C9F2D4; border-color: #1E9A47; }
+.card .wc { background: #F1FAF4; color: #23382B; }
+.card .wc.sel { background: #FFC53D; }
+.card .wc.fnd { background: #2CB352; color: #fff; }
+.card .xc input { background: #fff; color: #23382B; border-color: #1E7A4A; }
+.card .xc input.ok { background: #C9F2D4; }
+.card .xc input.bad { background: #FFD9DE; }
+.card .xn { color: #B71C30; }
+.card .scn { border: 3px solid #2F9E63; }
+.card .story { background: #F1FAF4; color: #23382B; }
+.card .bowl { background: #E6F3FF; border-color: #2F9E63; }
+.card .tray { border-color: #2F9E63; }
+.card .bar2 { background: #D7EBDD; }
+.card .cert { background: #FFF6DF; border: 4px double #C98A0B; }
+.card .vstrip figure { color: #23382B; }
+.card .opts.pics .btn.imgb { background: #fff; }
+@keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
+.confetti span { position: absolute; top: -8%; animation: fall 2.6s ease-in forwards; }
+@keyframes fall { to { transform: translateY(115vh) rotate(380deg); opacity: .85; } }
+@media (prefers-reduced-motion: reduce) { .modal::before { animation: none; } .confetti { display: none; } .card .btn.bad { animation: none; } }
+
+/* ---------- Cartoon frame built from the illustrated assets ---------- */
+.modal { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); height: 100%; height: 100dvh; }
+.cardwrap { position: relative; z-index: 1; width: min(640px, 100%); max-height: calc(100% - 84px); margin-top: 84px; justify-self: center; align-self: center;
+  display: grid; grid-template-rows: minmax(0, 1fr); }
+.cardwrap .card { width: auto; max-width: none; max-height: none; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+  padding: 66px clamp(20px, 6vw, 56px) 76px; border: 5px solid #fff; border-radius: 28px; outline: none;
+  background: url("frame/snowflakes.webp") 0 0 / 340px 340px repeat, linear-gradient(#D9EEFA, #F2FAFF);
+  box-shadow: 0 12px 44px rgba(0, 0, 0, .5), 0 0 0 6px #2F9E63; }
+.cardwrap .card .kicker { margin-left: 50px; }
+.deco { position: absolute; pointer-events: none; z-index: 2; background-repeat: no-repeat; background-size: contain; background-position: center; }
+.deco.lights { left: 14px; right: 14px; top: 2px; height: 56px; z-index: 1; background: url("frame/lights-top.webp") 0 0 / auto 56px repeat-x; }
+.deco.corner { width: 112px; height: 112px; }
+.deco.corner.tl { left: -8px; top: -8px; background-image: url("frame/corner-top-left.webp"); }
+.deco.corner.tr { right: -8px; top: -8px; background-image: url("frame/corner-top-left.webp"); transform: scaleX(-1); }
+.deco.corner.bl { left: -8px; bottom: -8px; background-image: url("frame/corner-bottom-left.webp"); background-position: left bottom; }
+.deco.corner.br { right: -8px; bottom: -8px; background-image: url("frame/corner-bottom-left.webp"); background-position: left bottom; transform: scaleX(-1); }
+.deco.peek { left: 52%; bottom: calc(100% - 8px); width: 124px; height: 124px; z-index: 3; background-position: center bottom; }
+.deco.peek.p0 { background-image: url("frame/peek-snowman.webp"); }
+.deco.peek.p1 { background-image: url("frame/peek-reindeer.webp"); }
+.deco.peek.p2 { background-image: url("frame/peek-elf.webp"); }
+.deco.peek.p3 { background-image: url("frame/peek-santa.webp"); }
+.cardwrap .x { position: absolute; top: -14px; right: -10px; z-index: 5; width: 46px; height: 46px; padding: 0; display: grid; place-items: center;
+  border-radius: 50%; color: #fff; font: 700 1.3rem/1 var(--font-body); border: 3px solid #fff; cursor: pointer;
+  background: radial-gradient(circle at 35% 30%, #F0495F, #B71C30); box-shadow: 0 3px 8px rgba(0, 0, 0, .4); }
+.pad { width: 100%; height: auto; aspect-ratio: 640 / 440; background: #fff; border: 4px solid #2F9E63; border-radius: 16px; touch-action: none; cursor: crosshair; box-shadow: 0 3px 0 #1E7A4A; }
+.padtools { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.padhint { font-size: 1.2rem !important; text-align: center; }
+.swatch { width: 44px; height: 44px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #23382B; cursor: pointer; display: grid; place-items: center; padding: 0; font-size: 1.1rem; }
+.swatch.on { box-shadow: 0 0 0 4px #E59A0C; transform: scale(1.12); }
+.swatch.size { background: #fff; }
+.swatch.size i { display: block; border-radius: 50%; background: #23382B; }
+.garland { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto; }
+@media (max-width: 520px) {
+  .cardwrap .card { padding: 58px 18px 62px; }
+  .cardwrap .card .kicker { margin-left: 36px; }
+  .deco.corner { width: 80px; height: 80px; }
+  .deco.lights { height: 40px; background-size: auto 40px; }
+  .deco.peek { width: 96px; height: 96px; }
+}
+
+/* Spot the difference pictures */
+.spotwrap { position: relative; width: 100%; border-radius: 16px; overflow: hidden; border: 4px solid #2F9E63; box-shadow: 0 3px 0 #1E7A4A; cursor: crosshair; line-height: 0; }
+.spotimg { width: 100%; height: auto; display: block; user-select: none; -webkit-user-drag: none; }
+.spotmark { position: absolute; aspect-ratio: 1; border: 4px solid #E8213F; border-radius: 50%; box-shadow: 0 0 0 2px #fff; pointer-events: none; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Countdown to Christmas</h1>
+    <p class="status" id="status"></p>
+    <div class="progress"><span id="count"></span><div class="bar"><i id="barfill"></i></div></div>
+  </header>
+  <div class="teacher" id="teacher">
+    <span>Teacher mode</span>
+    <button id="tbtn" type="button">Open every day to test</button>
+  </div>
+  <div class="board"><img src="calendar.webp" alt="Countdown to Christmas: doors numbered 1 to 25" draggable="false"><div class="hots" id="grid"></div></div>
+  <footer>Every number hides a game or a prize. Find today’s number.</footer>
+</div>
+<div id="modal" class="modal" hidden></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+/* ============================================================
+   CONTENIDO: una entrada por día (25). Tipos de juego:
+   memory, wordsearch, match, seq (preguntas una a una), spot, missing,
+   hangman, crossword, order, words, task (instrucciones + botón), certificate.
+   Para cambiar un enlace de vídeo, busca "url:" en el día que quieras.
+   ============================================================ */
+const YT = (q) => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
+const DAYS = [
+  { t: "memory", icon: "🎁", title: "Christmas Memory", intro: "Turn over two cards and find the matching pairs!", challenge: "Can you find all 8 pairs?",
+    imgs: ["santa-claus", "reindeer", "star", "snowman", "christmas-tree", "present-gift", "stocking", "cookie"] },
+  { t: "wordsearch", icon: "🔎", title: "Christmas Word Search", intro: "Find the 8 hidden Christmas words! Tap the first letter, then the last letter.", challenge: "Can you find all the words?",
+    words: ["CHRISTMAS", "SANTA", "REINDEER", "SNOWMAN", "PRESENT", "STAR", "CANDY", "BELLS"],
+    vocab: [["santa-claus", "Santa"], ["reindeer", "Reindeer"], ["snowman", "Snowman"], ["present-gift", "Present"], ["star", "Star"], ["candy", "Candy"], ["bell", "Bells"]] },
+  { t: "match", icon: "🎄", title: "Match the Words", intro: "Match each Christmas picture with its correct English word! Tap a picture, then its word.", challenge: "Can you match all 6 correctly?",
+    pairs: [["santa-claus", "Santa"], ["christmas-tree", "Tree"], ["present-gift", "Present"], ["snowman", "Snowman"], ["bell", "Bell"], ["stocking", "Stocking"]] },
+  { t: "seq", icon: "🖼️", title: "What’s This?", intro: "Look at the picture and choose the correct word!", challenge: "Can you get all 5 right?",
+    items: [
+      { q: "What’s this?", img: "candy-cane", o: ["Candy cane", "Candle", "Cookie"], c: "Candy cane" },
+      { q: "What’s this?", img: "sleigh", o: ["Sleigh", "Bicycle", "Plane"], c: "Sleigh" },
+      { q: "What’s this?", img: "ornament", o: ["Ornament", "Ball", "Bell"], c: "Ornament" },
+      { q: "What’s this?", img: "mittens", o: ["Mittens", "Socks", "Boots"], c: "Mittens" },
+      { q: "What’s this?", img: "gingerbread-man", o: ["Gingerbread man", "Snowman", "Elf"], c: "Gingerbread man" }
+    ] },
+  { t: "spot", icon: "👀", title: "Spot the Difference", intro: "Look carefully at the two Christmas pictures. Find 5 differences! Tap on them.", challenge: "Can you find all 5 differences?" },
+  { t: "seq", icon: "🔤", title: "Unscramble the Words", intro: "The Christmas words are mixed up! Put the letters in the correct order.", challenge: "Can you unscramble all 8 words?",
+    items: [
+      { q: "LFE", a: ["elf"], big: true, img: "elf" }, { q: "ATNAS", a: ["santa"], big: true, img: "santa-claus" }, { q: "RATS", a: ["star"], big: true, img: "star" }, { q: "WONS", a: ["snow"], big: true, img: "snow" },
+      { q: "TFIG", a: ["gift"], big: true, img: "present-gift" }, { q: "LLEB", a: ["bell"], big: true, img: "bell" }, { q: "REEDRINE", a: ["reindeer"], big: true, img: "reindeer" }, { q: "KTSNOCIG", a: ["stocking"], big: true, img: "stocking" }
+    ] },
+  { t: "seq", icon: "🎄", title: "Christmas Quiz", intro: "Answer 5 Christmas questions. Choose the correct answer!", challenge: "Can you get 5 out of 5?",
+    items: [
+      { q: "What colour is Rudolph's nose?", o: ["Red", "Blue", "Green"], c: "Red", img: "rudolph" },
+      { q: "Where does Santa live?", o: ["North Pole", "London", "Spain"], c: "North Pole", img: "north-pole" },
+      { q: "What do we decorate at Christmas?", o: ["A tree", "A bicycle", "A banana"], c: "A tree", img: "tree-decorations" },
+      { q: "What does Santa travel in?", o: ["A sleigh", "A car", "A plane"], c: "A sleigh", img: "sleigh" },
+      { q: "What do we put inside a stocking?", o: ["Presents", "Sand", "Water"], c: "Presents", img: "stocking" }
+    ] },
+  { t: "missing", icon: "🎁", title: "What's Missing?", intro: "Look carefully at the 6 Christmas objects. Remember them! You have 10 seconds.", challenge: "What's missing?" },
+  { t: "hangman", icon: "☃️", title: "Christmas Hangman", intro: "Guess the hidden Christmas word! Choose letters one by one. You have 6 wrong guesses.", challenge: "Can you guess all 5 words?",
+    words: [["TREE", "You decorate it at Christmas.", "christmas-tree"], ["SANTA", "He brings presents on Christmas Eve.", "santa-claus"], ["SNOW", "It is white and cold. It falls from the sky.", "snow"], ["STAR", "It shines at the top of the tree.", "star"], ["GIFT", "You open it on Christmas Day.", "present-gift"]] },
+  { t: "seq", icon: "🕵️", title: "Guess Who? Christmas Characters", intro: "Read the clues and guess the Christmas character!", challenge: "Can you guess all 5 characters?",
+    items: [
+      { q: "I have a white beard. I wear a red suit. Who am I?", a: ["santa", "santa claus", "father christmas"], reveal: "santa-claus" },
+      { q: "I have a red nose. I pull Santa's sleigh. Who am I?", a: ["rudolph", "reindeer", "rudolph the reindeer"], reveal: "rudolph" },
+      { q: "I am made of snow. I have a carrot nose. Who am I?", a: ["snowman", "a snowman", "the snowman"], reveal: "snowman" },
+      { q: "I work for Santa. I make toys. Who am I?", a: ["elf", "an elf", "santas elf", "a elf"], reveal: "elf" },
+      { q: "I am sweet and made of gingerbread. Who am I?", a: ["gingerbread man", "gingerbread", "the gingerbread man", "gingerbread cookie"], reveal: "gingerbread-man" }
+    ] },
+  { t: "seq", icon: "🔍", title: "Find the Odd One Out", intro: "Look at the pictures and find the one that doesn't belong!", challenge: "Can you find the odd one out in all 5 groups?",
+    items: [
+      { q: "Which one doesn't belong?", o: ["christmas-tree", "santa-claus", "present-gift", "watermelon"], c: "watermelon", oi: true },
+      { q: "Which one doesn't belong?", o: ["snowman", "snowflake", "gloves", "ice-cream"], c: "ice-cream", oi: true },
+      { q: "Which one doesn't belong?", o: ["reindeer", "sleigh", "santa-claus", "bicycle"], c: "bicycle", oi: true },
+      { q: "Which one doesn't belong?", o: ["star", "bell", "christmas-tree", "fish"], c: "fish", oi: true },
+      { q: "Which one doesn't belong?", o: ["scarf", "gloves", "coat", "pizza"], c: "pizza", oi: true }
+    ] },
+  { t: "seq", icon: "✅", title: "True or False?", intro: "Read the sentences and decide if they are TRUE or FALSE!", challenge: "Can you get 5 correct answers?",
+    items: [
+      { q: "Santa wears a red suit.", img: "red-suit", o: ["TRUE", "FALSE"], c: "TRUE", fixed: true },
+      { q: "Reindeer can fly without magic.", img: "reindeer", o: ["TRUE", "FALSE"], c: "FALSE", fixed: true },
+      { q: "Christmas is in December.", img: "christmas-tree", o: ["TRUE", "FALSE"], c: "TRUE", fixed: true },
+      { q: "Snowmen are made of sand.", img: "snowman", o: ["TRUE", "FALSE"], c: "FALSE", fixed: true },
+      { q: "Santa travels in a sleigh.", img: "sleigh", o: ["TRUE", "FALSE"], c: "TRUE", fixed: true }
+    ] },
+  { t: "crossword", icon: "✏️", title: "Christmas Crossword", intro: "Read the clues and complete the Christmas crossword!", challenge: "Can you complete the crossword?",
+    words: [
+      { n: 1, dir: "A", ans: "PRESENTS", r: 5, c: 0, clue: "Santa brings these to children.", img: "present-gift" },
+      { n: 2, dir: "D", ans: "REINDEER", r: 5, c: 1, clue: "It has a red nose.", img: "rudolph" },
+      { n: 3, dir: "D", ans: "SNOWMAN", r: 5, c: 3, clue: "It is made of snow.", img: "snowman" },
+      { n: 4, dir: "D", ans: "SLEIGH", r: 5, c: 7, clue: "Santa travels in this.", img: "sleigh" },
+      { n: 5, dir: "A", ans: "ELF", r: 7, c: 7, clue: "Santa's little helper.", img: "elf" },
+      { n: 6, dir: "A", ans: "STAR", r: 12, c: -2, clue: "It shines at the top of the Christmas tree.", img: "star" }
+    ] },
+  { t: "order", icon: "📖", title: "Put the Story in Order", intro: "The Christmas story is all mixed up! Tap the sentences in the correct order.", challenge: "Can you put the Christmas story in order?",
+    vocab: [["make", "make"], ["pull", "pull"], ["deliver", "deliver"], ["wake-up", "wake up"], ["open", "open"]],
+    items: ["Santa gets into his sleigh.", "The reindeer pull the sleigh.", "The elves make the presents.", "Santa delivers the presents.", "Children wake up and open their presents."],
+    order: ["The elves make the presents.", "Santa gets into his sleigh.", "The reindeer pull the sleigh.", "Santa delivers the presents.", "Children wake up and open their presents."] },
+  { t: "seq", icon: "🎁", title: "What's in Santa's Bag?", intro: "Santa has a bag full of presents! Read the clues and guess what's inside.", challenge: "Can you guess all 5 presents?",
+    items: [
+      { q: "It's soft and you wear it on your head.", a: ["hat", "a hat", "cap", "woolly hat"], reveal: "hat" },
+      { q: "It's a toy and you can hug it.", a: ["teddy bear", "teddy", "a teddy bear", "bear"], reveal: "teddy-bear" },
+      { q: "It's round and you can kick it.", a: ["ball", "a ball", "football"], reveal: "ball" },
+      { q: "It's a game with many pieces.", a: ["puzzle", "a puzzle", "jigsaw", "jigsaw puzzle"], reveal: "puzzle" },
+      { q: "It's a toy with four wheels.", a: ["toy car", "car", "a toy car", "a car"], reveal: "toy-car" }
+    ] },
+  { t: "task", icon: "🎶", title: "Christmas Song", hero: "jingle-bells", intro: "Listen to a Christmas song and sing along!",
+    steps: ["Play a Christmas song in English, like Jingle Bells or We Wish You a Merry Christmas.", "Open the karaoke video and sing along.", "Try to complete the missing words of the lyrics."],
+    link: { url: YT("Jingle Bells karaoke for kids lyrics"), label: "Open a karaoke video" }, challenge: "Can you sing the whole song in English?" },
+  { t: "task", icon: "🎨", title: "Drawing Challenge", hero: "draw", pad: true, intro: "Draw your dream Christmas tree!",
+    steps: [["Draw a Christmas tree.", "christmas-tree"], ["Decorate it with 5 ornaments.", "ornament"], ["Add a star, presents and colourful lights.", "lights"], ["Write 3 English words about your drawing.", "draw"]], challenge: "Can you describe your Christmas tree in English?" },
+  { t: "task", icon: "💌", title: "Santa's Message", hero: "dear-santa", intro: "Write a short letter to Santa! Use this template:",
+    template: "Dear Santa,\nMy name is ...\nThis Christmas I would like ...\nMy favourite Christmas activity is ...\nThank you, Santa!\nLove, ...", challenge: "Can you write your own Christmas letter?" },
+  { t: "seq", icon: "🎁", title: "Guess the Presents", intro: "Guess the 3 Christmas presents from their descriptions!", challenge: "Can you guess all 3 presents?",
+    items: [
+      { q: "You can read it. It has pages and stories.", o: ["A book", "Socks", "A video game console"], c: "A book", pics: { "A book": "book", "Socks": "socks", "A video game console": "video-game-console" } },
+      { q: "You can wear them on your feet. They keep you warm.", o: ["A book", "Socks", "A video game console"], c: "Socks", pics: { "A book": "book", "Socks": "socks", "A video game console": "video-game-console" } },
+      { q: "You can play with it. It has a screen and buttons.", o: ["A book", "Socks", "A video game console"], c: "A video game console", pics: { "A book": "book", "Socks": "socks", "A video game console": "video-game-console" } }
+    ] },
+  { t: "words", icon: "❄️", title: "Winter Words", intro: "Name 5 things you can see in winter! Type one word at a time.", challenge: "Can you name 5 winter words in English?", need: 5, pics: { snow: "snow", snowman: "snowman", scarf: "scarf", gloves: "gloves", glove: "gloves", boots: "boots", boot: "boots", snowflake: "snowflake", snowflakes: "snowflake", ice: "ice", coat: "coat", hat: "hat", mittens: "mittens", icicle: "icicle" },
+    valid: ["snow", "snowman", "scarf", "gloves", "glove", "boots", "boot", "snowflake", "snowflakes", "ice", "coat", "hat", "mittens", "jacket", "sled", "sledge", "snowball", "icicle", "sweater", "jumper", "winter", "penguin", "fireplace"] },
+  { t: "task", icon: "🎬", title: "Christmas Movie", hero: "find", intro: "Watch a short Christmas video in English!",
+    steps: ["Choose a short Christmas animation or story and watch it.", "Listen carefully.", "Answer: Who is the main character?", "Answer: Where does the story happen?", "Answer: What happens at the end?"],
+    link: { url: YT("short christmas animation for kids in English"), label: "Open a Christmas video" }, challenge: "Can you understand the Christmas story?" },
+  { t: "cook", icon: "🍪", title: "Christmas Cookie Kitchen", intro: "Follow the recipe and bake Christmas cookies!", challenge: "Can you follow the recipe in English?",
+    order: [["flour", "flour"], ["sugar", "sugar"], ["butter", "butter"], ["egg", "egg"], ["ginger", "ginger"], ["cinnamon", "cinnamon"]],
+    shapes: [["star", "a star"], ["christmas-tree", "a tree"], ["bell", "a bell"]], extra: ["snowman", "reindeer"], minutes: 12 },
+  { t: "task", icon: "✂️", title: "Christmas Craft", hero: "scissors", intro: "Make your own paper snowflake!",
+    steps: [["Take a square piece of paper.", "paper"], ["Fold it in half.", "fold"], ["Fold it again.", "fold"], ["Cut small shapes along the edges.", "edges"], ["Open the paper carefully.", "open"]], challenge: "Can you make a beautiful snowflake?" },
+  { t: "task", icon: "🌟", title: "Christmas Story", hero: "jar", vocab: [["garden", "garden"], ["jar", "jar"], ["hill", "hill"], ["star", "star"]], intro: "Read a mini Christmas story, then enjoy a special video!",
+    story: "On Christmas Eve, a little star fell from the sky into Mia's garden. \"I am lost,\" said the star. Mia put the star in a jar and walked to the top of the hill. Santa's sleigh flew by. \"Thank you, Mia!\" said Santa. The star flew back to the sky. That night, it shone brighter than ever, just for Mia.",
+    steps: ["Read the story out loud.", "Who fell from the sky?", "Where did Mia walk to?", "How does the story end?"],
+    link: { url: YT("short christmas story for kids in English"), label: "Open a special Christmas video" }, challenge: "Can you retell the story in English?" },
+  { t: "certificate", icon: "🎅", title: "Merry Christmas!", intro: "You completed the Advent Calendar! Write your name to get your Christmas certificate." }
+];
+const TOTAL = DAYS.length;
+
+const KEY = "adviento-v3";
+const $ = (id) => document.getElementById(id);
+let state = { opened: {}, done: {} };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.opened) state = s; } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+
+const now = new Date();
+const year = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+const startMs = new Date(year, 11, 1).getTime();
+const todayN = (() => {
+  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  return Math.floor((t - startMs) / 86400000) + 1; // 1 = 1 de diciembre
+})();
+let teacherMode = false;
+const isTeacherLink = location.hash === "#profe";
+const unlocked = (n) => teacherMode || todayN >= n;
+
+function norm(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim(); }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function toast(t) {
+  const x = $("toast"); x.textContent = t; x.hidden = false;
+  clearTimeout(toast.h); toast.h = setTimeout(() => { x.hidden = true; }, 2600);
+}
+
+/* Centro de cada número sobre la imagen (en % del ancho y del alto) */
+const SPOT = {
+  17: [25.5, 25.0], 4: [35.7, 25.0], 22: [45.5, 25.0], 9: [54.9, 25.0], 1: [64.5, 25.0], 14: [74.4, 25.0],
+  6: [25.0, 38.3], 20: [34.9, 38.3], 11: [44.6, 38.3], 24: [54.3, 38.3], 8: [64.3, 38.3], 3: [74.4, 38.3],
+  13: [25.4, 51.4], 2: [35.2, 51.4], 19: [44.9, 51.4], 5: [54.7, 51.4], 16: [64.4, 51.4], 23: [74.2, 51.4],
+  10: [25.7, 64.7], 21: [35.6, 64.7], 7: [45.2, 64.7], 18: [54.9, 64.7], 12: [64.5, 64.7], 15: [74.6, 64.7],
+  25: [49.2, 85.2]
+};
+
+function iconFor(d) {
+  return d.icon || ({ seq: "❓", memory: "🃏", wordsearch: "🔎", match: "🔗", spot: "👀", missing: "🎁", hangman: "☃️", crossword: "✏️", order: "📖", words: "❄️", task: "🎨", certificate: "🎅" })[d.t] || "🎁";
+}
+
+function makeDoor(n, cls) {
+  const d = DAYS[n - 1];
+  const open = unlocked(n);
+  const b = el("button", cls);
+  b.type = "button";
+  b.setAttribute("aria-label", "Door " + n + (open ? "" : ", still locked"));
+  if (!open) b.classList.add("locked");
+  if (open && n === todayN && !teacherMode) b.classList.add("today");
+  b.addEventListener("click", () => openDoor(n));
+  if (state.opened[n]) b.appendChild(el("span", "ic", iconFor(d)));
+  if (state.done[n]) b.appendChild(el("span", "ok", "✔"));
+  return b;
+}
+
+function renderGrid() {
+  const board = $("grid"); board.textContent = "";
+  for (let n = 1; n <= TOTAL; n++) {
+    const b = makeDoor(n, n === TOTAL ? "hot big" : "hot");
+    b.style.left = SPOT[n][0] + "%";
+    b.style.top = SPOT[n][1] + "%";
+    board.appendChild(b);
+  }
+  const doneN = Object.keys(state.done).length;
+  $("count").textContent = doneN + " of " + TOTAL + " completed";
+  $("barfill").style.width = (doneN / TOTAL * 100) + "%";
+}
+
+function renderStatus() {
+  const s = $("status");
+  if (teacherMode) s.textContent = "Teacher mode is on: every door is open.";
+  else if (todayN < 1) s.textContent = "It starts on December 1. " + (1 - todayN) + (1 - todayN === 1 ? " day to go." : " days to go.");
+  else if (todayN > TOTAL) s.textContent = "Every door is open. Happy holidays!";
+  else s.textContent = "Today is December " + todayN + ". Find number " + todayN + " on the calendar and open it. You can also open earlier days.";
+}
+
+/* ---------- Ventana ---------- */
+function closeModal() { $("modal").hidden = true; $("modal").textContent = ""; renderGrid(); }
+$("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeModal(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("modal").hidden) closeModal(); });
+
+function celebrate() {
+  const c = el("div", "confetti");
+  ["✨", "⭐", "❄️", "🎁", "✨", "⭐", "❄️", "🍪", "✨", "⭐", "❄️", "🎄"].forEach((e, i) => {
+    const sp = el("span", null, e);
+    sp.style.left = (4 + i * 8) + "%"; sp.style.animationDelay = (i * 0.12) + "s"; sp.style.fontSize = (1.1 + (i % 3) * 0.4) + "rem";
+    c.appendChild(sp);
+  });
+  $("modal").appendChild(c);
+  setTimeout(() => c.remove(), 3600);
+}
+
+function openDoor(n) {
+  if (!unlocked(n)) { toast("Not yet! This door opens on December " + n + "."); return; }
+  const d = DAYS[n - 1];
+  state.opened[n] = true; save();
+  const m = $("modal"); m.textContent = ""; m.hidden = false;
+  const card = el("div", "card");
+  card.setAttribute("role", "dialog"); card.setAttribute("aria-modal", "true");
+  const x = el("button", "x", "✕"); x.type = "button"; x.setAttribute("aria-label", "Close"); x.addEventListener("click", closeModal);
+  const wrap = el("div", "cardwrap");
+  card.appendChild(el("p", "kicker", "December " + n));
+  const body = el("div"); body.style.display = "grid"; body.style.gap = "14px";
+  const finish = () => {
+    if (state.done[n]) return;
+    state.done[n] = true; save();
+    body.appendChild(el("p", "msg ok", "Completed! ⭐"));
+    celebrate();
+  };
+  (GAMES[d.t])(body, d, finish);
+  card.appendChild(body);
+  wrap.append(card, el("span", "deco lights"), el("span", "deco peek p" + (n % 4)), el("span", "deco corner tl"), el("span", "deco corner tr"), el("span", "deco corner bl"), el("span", "deco corner br"), x);
+  m.appendChild(wrap);
+  x.focus();
+}
+
+/* ---------- Juegos ---------- */
+const strip = (s) => norm(s).replace(/^(a|an|the) /, "");
+const rnd = (n) => Math.floor(Math.random() * n);
+const pic = (slug, cls) => { const i = document.createElement("img"); i.src = "cards/" + slug + ".webp"; i.alt = slug.replace(/-/g, " "); i.className = cls || "pic"; i.draggable = false; return i; };
+function vstrip(list) {
+  const s = el("div", "vstrip");
+  list.forEach(([k, w]) => { const fg = el("figure"); fg.append(pic(k, "vimg"), el("figcaption", null, w)); s.appendChild(fg); });
+  return s;
+}
+function head(body, d) {
+  body.append(el("h2", null, d.title));
+  if (d.intro) body.append(el("p", null, d.intro));
+  if (d.challenge) body.append(el("p", "chal", "Challenge: " + d.challenge));
+  if (d.vocab) body.append(vstrip(d.vocab));
+}
+function answerBox(body, check, onOk) {
+  const row = el("div", "row");
+  const inp = el("input"); inp.type = "text"; inp.id = "ans"; inp.autocomplete = "off"; inp.placeholder = "Your answer";
+  const go = el("button", "btn primary", "Check"); go.type = "button";
+  const msg = el("p", "msg");
+  const run = () => {
+    if (!inp.value.trim()) return;
+    if (check(inp.value)) { msg.className = "msg ok"; msg.textContent = "Correct!"; inp.disabled = true; go.disabled = true; onOk(); }
+    else { msg.className = "msg bad"; msg.textContent = "Try again!"; inp.select(); }
+  };
+  go.addEventListener("click", run);
+  inp.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
+  row.append(inp, go); body.append(row, msg);
+  return inp;
+}
+
+/* Preguntas una a una: con opciones (o, c) o con respuesta escrita (a) */
+function seq(body, items, finish) {
+  const box = el("div", "seq"); body.appendChild(box);
+  let i = 0;
+  const show = () => {
+    box.textContent = "";
+    if (i >= items.length) { box.append(el("p", "msg ok", "Well done! " + items.length + " out of " + items.length + ".")); finish(); return; }
+    const it = items[i];
+    box.append(el("p", "prog", "Question " + (i + 1) + " of " + items.length), el("p", it.qi ? "qq" : (it.big ? "qq big2" : "qq"), it.qi ? "" : it.q));
+    if (it.img) box.append(pic(it.img));
+    if (it.qi) { const row = el("div", "qirow"); it.qi.forEach((k, j) => { if (j) row.appendChild(el("span", "plus", "+")); row.appendChild(pic(k, "qimg")); }); box.append(row); }
+    const next = () => setTimeout(() => { i++; show(); }, it.reveal ? 1800 : 700);
+    if (it.o) {
+      const opts = it.fixed ? it.o.slice() : shuffle(it.o);
+      const wrap = el("div", (it.oi || it.pics) ? "opts pics" : it.emo ? "opts emo" : "opts"); const msg = el("p", "msg");
+      opts.forEach((o) => {
+        const b = el("button", "btn", it.oi ? "" : o); b.type = "button";
+        if (it.oi) { b.classList.add("imgb"); b.appendChild(pic(o, "oimg")); b.setAttribute("aria-label", o.replace(/-/g, " ")); }
+        else if (it.pics && it.pics[o]) { b.classList.add("imgb"); b.prepend(pic(it.pics[o], "oimg")); }
+        b.addEventListener("click", () => {
+          if (o === it.c) { b.classList.add("ok"); msg.className = "msg ok"; msg.textContent = "Correct!"; wrap.querySelectorAll("button").forEach((x) => x.disabled = true); next(); }
+          else { b.classList.add("bad"); b.disabled = true; msg.className = "msg bad"; msg.textContent = "Try again!"; }
+        });
+        wrap.appendChild(b);
+      });
+      box.append(wrap, msg);
+    } else {
+      const ok = it.a.map(strip);
+      const inp = answerBox(box, (v) => ok.includes(strip(v)), () => { if (it.reveal) box.append(pic(it.reveal)); next(); });
+      inp.focus();
+    }
+  };
+  show();
+}
+
+/* Dos escenas casi iguales para "spot the difference" */
+const scene = (v) =>
+  '<rect width="200" height="150" fill="#BFE3FF"/>' +
+  (v.moon ? '<circle cx="22" cy="22" r="10" fill="#FFF3A0"/>' : "") +
+  '<ellipse cx="100" cy="152" rx="130" ry="40" fill="#fff"/>' +
+  '<rect x="36" y="100" width="8" height="14" fill="#8A4B22"/><polygon points="40,40 62,78 50,78 68,104 12,104 30,78 18,78" fill="#2CB352" stroke="#0F7D3C"/>' +
+  (v.star ? '<polygon points="40,28 43,36 51,36 45,41 47,49 40,44 33,49 35,41 29,36 37,36" fill="#FFC21A"/>' : "") +
+  '<circle cx="100" cy="108" r="22" fill="#fff" stroke="#9BB8D6"/><circle cx="100" cy="72" r="15" fill="#fff" stroke="#9BB8D6"/>' +
+  '<rect x="88" y="48" width="24" height="12" fill="#33304A"/><rect x="84" y="58" width="32" height="4" fill="#33304A"/>' +
+  '<circle cx="95" cy="70" r="1.8" fill="#33304A"/><circle cx="105" cy="70" r="1.8" fill="#33304A"/><polygon points="100,73 112,76 100,78" fill="#FF8A1F"/>' +
+  '<rect x="84" y="84" width="32" height="7" rx="3" fill="' + v.scarf + '"/>' +
+  '<rect x="136" y="82" width="50" height="40" fill="#E8A35E" stroke="#6B3524"/><polygon points="130,84 161,58 192,84" fill="#E8213F" stroke="#6B3524"/>' +
+  '<rect x="142" y="92" width="14" height="14" fill="' + v.win + '" stroke="#6B3524"/><rect x="166" y="100" width="12" height="22" fill="#8A4B22"/>' +
+  '<rect x="46" y="122" width="32" height="24" fill="#fff" stroke="#6B3524"/><rect x="58" y="122" width="8" height="24" fill="' + v.rib + '"/>';
+const DIFFS = [[22, 22], [40, 40], [100, 87], [149, 99], [62, 134]];
+
+const GAMES = {
+  seq(body, d, finish) { head(body, d); seq(body, d.items, finish); },
+
+  memory(body, d, finish) {
+    head(body, d);
+    const grid = el("div", "mem"); const msg = el("p", "msg");
+    const keys = d.imgs || d.emojis;
+    const cards = shuffle(keys.concat(keys));
+    let first = null, lock = false, found = 0, tries = 0;
+    cards.forEach((em) => {
+      const c = el("button", "mc", d.imgs ? "" : em); c.type = "button"; c.setAttribute("aria-label", "Card"); c.dataset.k = em;
+      if (d.imgs) c.appendChild(pic(em, "mimg"));
+      c.addEventListener("click", () => {
+        if (lock || c.classList.contains("up") || c.classList.contains("hit")) return;
+        c.classList.add("up");
+        if (!first) { first = c; return; }
+        tries++;
+        if (first.dataset.k === c.dataset.k) {
+          first.classList.replace("up", "hit"); c.classList.replace("up", "hit"); first = null; found++;
+          if (found === keys.length) { msg.className = "msg ok"; msg.textContent = "You found all the pairs in " + tries + " tries!"; finish(); }
+        } else {
+          lock = true; const a = first; first = null;
+          setTimeout(() => { a.classList.remove("up"); c.classList.remove("up"); lock = false; }, 800);
+        }
+      });
+      grid.appendChild(c);
+    });
+    body.append(grid, msg);
+  },
+
+  wordsearch(body, d, finish) {
+    head(body, d);
+    const N = 10, words = d.words;
+    let grid;
+    for (let attempt = 0; attempt < 30; attempt++) {
+      grid = Array.from({ length: N }, () => Array(N).fill(""));
+      let ok = true;
+      for (const w of words.slice().sort((a, b) => b.length - a.length)) {
+        let placed = false;
+        for (let t = 0; t < 300 && !placed; t++) {
+          const [dr, dc] = [[0, 1], [1, 0], [1, 1]][rnd(3)];
+          const r = rnd(N), c = rnd(N);
+          if (r + dr * (w.length - 1) >= N || c + dc * (w.length - 1) >= N) continue;
+          let fit = true;
+          for (let k = 0; k < w.length; k++) { const ch = grid[r + dr * k][c + dc * k]; if (ch && ch !== w[k]) { fit = false; break; } }
+          if (!fit) continue;
+          for (let k = 0; k < w.length; k++) grid[r + dr * k][c + dc * k] = w[k];
+          placed = true;
+        }
+        if (!placed) { ok = false; break; }
+      }
+      if (ok) break;
+    }
+    const L = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (!grid[r][c]) grid[r][c] = L[rnd(26)];
+    const list = el("div", "chips"); const chipOf = {};
+    words.forEach((w) => { const s = el("span", "chip", w); chipOf[w] = s; list.appendChild(s); });
+    const gEl = el("div", "ws"); const msg = el("p", "msg"); const btn = {};
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+      const b = el("button", "wc", grid[r][c]); b.type = "button"; btn[r + "," + c] = b;
+      b.addEventListener("click", () => pick(r, c));
+      gEl.appendChild(b);
+    }
+    const foundSet = new Set(); let start = null;
+    function pick(r, c) {
+      if (!start) { start = [r, c]; btn[r + "," + c].classList.add("sel"); return; }
+      const [r0, c0] = start; btn[r0 + "," + c0].classList.remove("sel"); start = null;
+      const dr = Math.sign(r - r0), dc = Math.sign(c - c0);
+      if (!((r - r0 === 0) || (c - c0 === 0) || Math.abs(r - r0) === Math.abs(c - c0))) return;
+      const len = Math.max(Math.abs(r - r0), Math.abs(c - c0)) + 1;
+      let s = ""; const cells = [];
+      for (let k = 0; k < len; k++) { s += grid[r0 + dr * k][c0 + dc * k]; cells.push(btn[(r0 + dr * k) + "," + (c0 + dc * k)]); }
+      const rev = s.split("").reverse().join("");
+      const w = words.find((x) => x === s || x === rev);
+      if (w && !foundSet.has(w)) {
+        foundSet.add(w); cells.forEach((x) => x.classList.add("fnd")); chipOf[w].classList.add("got");
+        msg.className = "msg ok"; msg.textContent = "You found " + w + "!";
+        if (foundSet.size === words.length) { msg.textContent = "You found all the words!"; finish(); }
+      } else { msg.className = "msg bad"; msg.textContent = "Not a word. Try again!"; }
+    }
+    body.append(list, gEl, msg);
+  },
+
+  match(body, d, finish) {
+    head(body, d);
+    const wrap = el("div", "mt"); const L = el("div", "mcol"), R = el("div", "mcol"); const msg = el("p", "msg");
+    let sel = null, left = d.pairs.length;
+    const mk = (side, id, txt) => {
+      const b = el("button", "btn mtb", txt); b.type = "button";
+      b.addEventListener("click", () => {
+        if (sel && sel.side !== side) {
+          if (sel.id === id) { sel.b.classList.remove("sel"); sel.b.classList.add("ok"); b.classList.add("ok"); sel.b.disabled = true; b.disabled = true; sel = null; left--; msg.className = "msg ok"; msg.textContent = "Great!"; if (!left) { msg.textContent = "All matched!"; finish(); } }
+          else { b.classList.add("bad"); setTimeout(() => b.classList.remove("bad"), 500); msg.className = "msg bad"; msg.textContent = "Try again!"; }
+        } else { if (sel) sel.b.classList.remove("sel"); sel = { side, id, b }; b.classList.add("sel"); }
+      });
+      return b;
+    };
+    d.pairs.forEach((p, i) => { const b = mk("L", i, ""); b.classList.add("imgb"); b.appendChild(pic(p[0], "oimg")); b.setAttribute("aria-label", p[0].replace(/-/g, " ")); L.appendChild(b); });
+    shuffle(d.pairs.map((p, i) => [p[1], i])).forEach(([w, i]) => R.appendChild(mk("R", i, w)));
+    wrap.append(L, R); body.append(wrap, msg);
+  },
+
+  spot(body, d, finish) {
+    head(body, d);
+    // Measured differences from the final PNG pair. x/y/r are percentages of the image (r is % of width).
+    const DIFF = [
+      { x: 45.4, y: 69.9, r: 11.0, name: "scarf" },
+      { x: 18.9, y: 11.0, r: 6.9, name: "star" },
+      { x: 30.8, y: 89.9, r: 6.5, name: "gift" },
+      { x: 88.6, y: 16.3, r: 10.6, name: "smoke" },
+      { x: 77.5, y: 59.2, r: 2.9, name: "nose" }
+    ];
+    const W = 1200, H = 800, PAD = 10;
+    const found = new Set();
+    const msg = el("p", "msg"); const cnt = el("p", "prog", "Found 0 of 5");
+    const frames = [["spot-a.webp", "Picture A"], ["spot-b.webp", "Picture B"]].map(([src, label]) => {
+      const wrap = el("div", "spotwrap");
+      const img = el("img", "spotimg"); img.src = "frame/" + src; img.alt = label; img.draggable = false;
+      wrap.appendChild(img);
+      wrap.addEventListener("click", (e) => {
+        const rc = wrap.getBoundingClientRect();
+        const fx = (e.clientX - rc.left) / rc.width * 100, fy = (e.clientY - rc.top) / rc.height * 100;
+        const k = DIFF.findIndex((p, i) => {
+          if (found.has(i)) return false;
+          const dx = (fx - p.x) / 100 * W, dy = (fy - p.y) / 100 * H;
+          return Math.hypot(dx, dy) < p.r / 100 * W + PAD;
+        });
+        if (k < 0) { msg.className = "msg bad"; msg.textContent = "Not a difference. Look again!"; return; }
+        found.add(k);
+        frames.forEach((w) => {
+          const m = el("span", "spotmark");
+          m.style.left = (DIFF[k].x - DIFF[k].r) + "%"; m.style.top = (DIFF[k].y - DIFF[k].r * W / H) + "%";
+          m.style.width = (DIFF[k].r * 2) + "%";
+          w.appendChild(m);
+        });
+        cnt.textContent = "Found " + found.size + " of 5"; msg.className = "msg ok"; msg.textContent = "Yes! You found one.";
+        if (found.size === DIFF.length) { msg.textContent = "You found all 5 differences!"; finish(); }
+      });
+      return wrap;
+    });
+    body.append(cnt, ...frames, msg);
+  },
+
+  missing(body, d, finish) {
+    head(body, d);
+    const POOL = ["present-gift", "christmas-tree", "star", "bell", "socks", "cookie", "reindeer", "santa-claus", "snowman", "candle", "candy", "scarf", "gingerbread-man", "mittens", "sleigh", "stocking"];
+    const mixed = shuffle(POOL);
+    const six = mixed.slice(0, 6);
+    const gone = six[rnd(6)];
+    const choices = shuffle([gone].concat(mixed.slice(6, 11)));
+    const show = el("div", "emoset"); const info = el("p", "scr"); const msg = el("p", "msg"); const opts = el("div", "opts pics");
+    body.append(info, show, msg, opts);
+    six.forEach((e) => show.appendChild(pic(e, "vimg")));
+    let t = 10; info.textContent = t;
+    const iv = setInterval(() => {
+      if (!info.isConnected) { clearInterval(iv); return; }
+      t--; info.textContent = t;
+      if (t > 0) return;
+      clearInterval(iv);
+      info.textContent = "What's missing?"; info.style.letterSpacing = "0"; info.style.fontSize = "1.4rem";
+      show.textContent = ""; six.filter((e) => e !== gone).forEach((e) => show.appendChild(pic(e, "vimg")));
+      choices.forEach((e) => {
+        const b = el("button", "btn imgb", ""); b.appendChild(pic(e, "oimg")); b.setAttribute("aria-label", e.replace(/-/g, " ")); b.type = "button";
+        b.addEventListener("click", () => {
+          if (e === gone) { b.classList.add("ok"); opts.querySelectorAll("button").forEach((x) => x.disabled = true); msg.className = "msg ok"; msg.textContent = "Correct! The " + gone.replace(/-/g, " ") + " was missing."; finish(); }
+          else { b.classList.add("bad"); b.disabled = true; msg.className = "msg bad"; msg.textContent = "Try again!"; }
+        });
+        opts.appendChild(b);
+      });
+    }, 1000);
+  },
+
+  hangman(body, d, finish) {
+    head(body, d);
+    const box = el("div", "seq"); body.appendChild(box);
+    let wi = 0;
+    const play = () => {
+      box.textContent = "";
+      if (wi >= d.words.length) { box.append(el("p", "msg ok", "You guessed all the words!")); finish(); return; }
+      const [word, hint, slug] = d.words[wi]; const got = new Set(); let wrong = 0;
+      const prog = el("p", "prog", "Word " + (wi + 1) + " of " + d.words.length), hintEl = el("p", null, "Hint: " + hint);
+      const wEl = el("div", "scr"); const lives = el("p", "prog"); const msg = el("p", "msg"); const kb = el("div", "kb");
+      const paint = () => { wEl.textContent = word.split("").map((ch) => (got.has(ch) ? ch : "_")).join(" "); lives.textContent = "Chances left: " + "❤️".repeat(6 - wrong) + "🤍".repeat(wrong); };
+      paint();
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach((ch) => {
+        const b = el("button", "key", ch); b.type = "button";
+        b.addEventListener("click", () => {
+          b.disabled = true;
+          if (word.includes(ch)) { got.add(ch); b.classList.add("ok"); } else { wrong++; b.classList.add("bad"); }
+          paint();
+          if (word.split("").every((c) => got.has(c))) { msg.className = "msg ok"; msg.textContent = "Yes! " + word; if (slug) box.append(pic(slug)); kb.querySelectorAll("button").forEach((x) => x.disabled = true); setTimeout(() => { wi++; play(); }, 2200); }
+          else if (wrong >= 6) { msg.className = "msg bad"; msg.textContent = "The word was " + word + ". Try again!"; kb.querySelectorAll("button").forEach((x) => x.disabled = true); setTimeout(play, 1800); }
+        });
+        kb.appendChild(b);
+      });
+      box.append(prog, hintEl, wEl, lives, kb, msg);
+    };
+    play();
+  },
+
+  crossword(body, d, finish) {
+    head(body, d);
+    const W = d.words;
+    const minC = Math.min(...W.map((w) => w.c)), minR = Math.min(...W.map((w) => w.r));
+    const maxC = Math.max(...W.map((w) => w.c + (w.dir === "A" ? w.ans.length - 1 : 0))), maxR = Math.max(...W.map((w) => w.r + (w.dir === "D" ? w.ans.length - 1 : 0)));
+    const cols = maxC - minC + 1, rows = maxR - minR + 1;
+    const cells = {};
+    W.forEach((w) => { for (let k = 0; k < w.ans.length; k++) { const r = w.r + (w.dir === "D" ? k : 0), c = w.c + (w.dir === "A" ? k : 0); const key = r + "," + c; if (!cells[key]) cells[key] = { ch: w.ans[k], num: null }; if (k === 0) cells[key].num = w.n; } });
+    const g = el("div", "xw"); g.style.gridTemplateColumns = "repeat(" + cols + ", minmax(0, 1fr))";
+    const inputs = [];
+    for (let r = minR; r <= maxR; r++) for (let c = minC; c <= maxC; c++) {
+      const cell = cells[r + "," + c];
+      if (!cell) { g.appendChild(el("div", "xe")); continue; }
+      const wrap = el("div", "xc");
+      if (cell.num) wrap.appendChild(el("span", "xn", String(cell.num)));
+      const inp = el("input"); inp.type = "text"; inp.maxLength = 1; inp.autocomplete = "off"; inp.id = "x" + r + "_" + c; inp.setAttribute("aria-label", "Crossword letter");
+      inp.addEventListener("input", () => { inp.value = inp.value.toUpperCase().slice(-1); inp.classList.remove("bad", "ok"); });
+      wrap.appendChild(inp); g.appendChild(wrap); inputs.push([inp, cell.ch]);
+    }
+    const sc = el("div", "xs"); sc.appendChild(g);
+    const clues = el("div", "clues");
+    W.forEach((w) => { const p = el("p", "clue", w.n + " " + (w.dir === "A" ? "across" : "down") + ": " + w.clue); if (w.img) p.prepend(pic(w.img, "cimg")); clues.appendChild(p); });
+    const msg = el("p", "msg"); const go = el("button", "btn primary", "Check"); go.type = "button";
+    go.addEventListener("click", () => {
+      let good = 0;
+      inputs.forEach(([i, ch]) => { i.classList.remove("ok", "bad"); if (i.value === ch) { i.classList.add("ok"); good++; } else if (i.value) i.classList.add("bad"); });
+      if (good === inputs.length) { msg.className = "msg ok"; msg.textContent = "The crossword is complete!"; finish(); }
+      else { msg.className = "msg bad"; msg.textContent = good + " of " + inputs.length + " letters are correct. Keep going!"; }
+    });
+    body.append(sc, clues, go, msg);
+  },
+
+  order(body, d, finish) {
+    head(body, d);
+    const picked = []; const msg = el("p", "msg"); const mine = el("ol", "ord"); const pool = el("div", "opts");
+    const draw = () => {
+      pool.textContent = ""; mine.textContent = "";
+      shuffle(d.items).forEach((s) => { if (picked.includes(s)) return; const b = el("button", "btn", s); b.type = "button"; b.addEventListener("click", () => { picked.push(s); check(); draw(); }); pool.appendChild(b); });
+      picked.forEach((s) => mine.appendChild(el("li", null, s)));
+    };
+    const check = () => {
+      if (picked.length < d.order.length) return;
+      if (picked.every((s, i) => s === d.order[i])) { msg.className = "msg ok"; msg.textContent = "Perfect! The story is in order."; finish(); }
+      else { msg.className = "msg bad"; msg.textContent = "Not quite. Try again!"; picked.length = 0; }
+    };
+    draw();
+    body.append(mine, pool, msg);
+  },
+
+  words(body, d, finish) {
+    head(body, d);
+    const ok = d.valid.map(norm); const found = new Set(); const chips = el("div", "chips"); const cnt = el("p", "prog", "0 of " + d.need);
+    const row = el("div", "row"); const inp = el("input"); inp.type = "text"; inp.id = "ans"; inp.autocomplete = "off"; inp.placeholder = "A winter word";
+    const go = el("button", "btn primary", "Add"); go.type = "button"; const msg = el("p", "msg");
+    const run = () => {
+      const k = strip(inp.value); if (!k) return;
+      if (found.has(k)) { msg.className = "msg bad"; msg.textContent = "You already wrote that one."; }
+      else if (!ok.includes(k)) { msg.className = "msg bad"; msg.textContent = "Hmm, not on my list. Try another winter word!"; }
+      else {
+        found.add(k); { const chip = el("span", "chip got", k); if (d.pics && d.pics[k]) chip.prepend(pic(d.pics[k], "cimg")); chips.appendChild(chip); } cnt.textContent = found.size + " of " + d.need;
+        msg.className = "msg ok"; msg.textContent = "Nice!";
+        if (found.size >= d.need) { msg.textContent = "You named " + found.size + " winter words!"; inp.disabled = true; go.disabled = true; finish(); }
+      }
+      inp.value = ""; if (!inp.disabled) inp.focus();
+    };
+    go.addEventListener("click", run);
+    inp.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
+    row.append(inp, go); body.append(row, cnt, chips, msg);
+  },
+
+  cook(body, d, finish) {
+    head(body, d);
+    const STEPS = ["Add", "Mix", "Cut out", "Bake", "Decorate"];
+    const bar = el("div", "chips");
+    const chipEls = STEPS.map((t) => { const c = el("span", "chip", t); bar.appendChild(c); return c; });
+    const instr = el("p", "instr"); const stage = el("div", "stage"); const msg = el("p", "msg");
+    body.append(bar, instr, stage, msg);
+    const setStep = (n) => chipEls.forEach((c, x) => { c.classList.toggle("got", x < n); c.classList.toggle("now", x === n); });
+    const say = (t, cls) => { msg.className = "msg" + (cls ? " " + cls : ""); msg.textContent = t; };
+    const alive = () => body.isConnected;
+
+    function add() {
+      setStep(0); stage.textContent = ""; say("");
+      const bowl = el("div", "bowl"); const tiles = el("div", "opts pics");
+      let n = 0;
+      const ask = () => { instr.textContent = "Add the " + d.order[n][1] + "."; };
+      ask();
+      shuffle(d.order).forEach(([slug]) => {
+        const b = el("button", "btn imgb"); b.type = "button"; b.setAttribute("aria-label", slug); b.appendChild(pic(slug, "oimg"));
+        b.addEventListener("click", () => {
+          if (slug === d.order[n][0]) {
+            b.disabled = true; b.classList.add("ok"); bowl.appendChild(pic(slug, "bimg")); n++;
+            if (n === d.order.length) { instr.textContent = "Everything is in the bowl!"; say("Great job!", "ok"); setTimeout(() => alive() && mix(), 1000); }
+            else { say("In the bowl!", "ok"); ask(); }
+          } else {
+            b.classList.add("bad"); setTimeout(() => b.classList.remove("bad"), 500);
+            say("That's not the " + d.order[n][1] + ". Try again!", "bad");
+          }
+        });
+        tiles.appendChild(b);
+      });
+      stage.append(bowl, tiles);
+    }
+
+    function mix() {
+      setStep(1); stage.textContent = ""; say("");
+      const times = 8; let n = 0;
+      instr.textContent = "Mix the ingredients! Tap the spoon " + times + " times.";
+      const bowl = el("div", "bowl"); d.order.forEach(([slug]) => bowl.appendChild(pic(slug, "bimg")));
+      const prog = el("div", "bar2"); const fill = el("i"); prog.appendChild(fill);
+      const btn = el("button", "btn primary", "🥄 Mix"); btn.type = "button";
+      btn.addEventListener("click", () => {
+        n++; fill.style.width = (n / times * 100) + "%";
+        bowl.classList.remove("stir"); void bowl.offsetWidth; bowl.classList.add("stir");
+        if (n >= times) {
+          btn.disabled = true; bowl.textContent = ""; bowl.appendChild(pic("dough", "bimg big"));
+          instr.textContent = "Now you have cookie dough!"; say("Well mixed!", "ok");
+          setTimeout(() => alive() && cut(), 1300);
+        }
+      });
+      stage.append(bowl, prog, btn);
+    }
+
+    function cut() {
+      setStep(2); stage.textContent = ""; say("");
+      const want = d.shapes.map((x) => x[0]); const names = d.shapes.map((x) => x[1]);
+      instr.textContent = "Cut out " + names.slice(0, -1).join(", ") + " and " + names[names.length - 1] + ".";
+      const tiles = el("div", "opts pics"); const tray = el("div", "tray"); const got = new Set();
+      shuffle(want.concat(d.extra)).forEach((slug) => {
+        const b = el("button", "btn imgb"); b.type = "button"; b.setAttribute("aria-label", slug.replace(/-/g, " ")); b.appendChild(pic(slug, "oimg"));
+        b.addEventListener("click", () => {
+          if (want.includes(slug)) {
+            b.disabled = true; b.classList.add("ok"); got.add(slug); tray.appendChild(pic(slug, "bimg")); say("Nice shape!", "ok");
+            if (got.size === want.length) { instr.textContent = "The tray is ready!"; setTimeout(() => alive() && bake(), 1000); }
+          } else { b.classList.add("bad"); b.disabled = true; say("That shape is not in the recipe!", "bad"); }
+        });
+        tiles.appendChild(b);
+      });
+      stage.append(tiles, el("p", "prog", "Your tray"), tray);
+    }
+
+    function bake() {
+      setStep(3); stage.textContent = ""; say("");
+      const W = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen","twenty","twenty-one","twenty-two","twenty-three","twenty-four","twenty-five","twenty-six","twenty-seven","twenty-eight","twenty-nine","thirty"];
+      instr.textContent = "Bake the cookies for " + W[d.minutes] + " minutes. Set the timer!";
+      let m = 0;
+      const oven = pic("bake");
+      const timer = el("div", "timer");
+      const minus = el("button", "key", "−"), plus = el("button", "key", "+"); minus.type = "button"; plus.type = "button";
+      minus.setAttribute("aria-label", "One minute less"); plus.setAttribute("aria-label", "One minute more");
+      const val = el("span", "tval"); const paint = () => { val.textContent = m + " min"; };
+      paint();
+      minus.addEventListener("click", () => { if (m > 0) { m--; paint(); } });
+      plus.addEventListener("click", () => { if (m < 30) { m++; paint(); } });
+      timer.append(minus, val, plus);
+      const go = el("button", "btn primary", "Start the oven"); go.type = "button";
+      go.addEventListener("click", () => {
+        if (m < d.minutes) { say("Too short! Read the recipe again.", "bad"); return; }
+        if (m > d.minutes) { say("Too long! The cookies will burn!", "bad"); return; }
+        go.disabled = true; minus.disabled = true; plus.disabled = true;
+        oven.classList.add("baking"); say("Baking…");
+        let left = m;
+        const iv = setInterval(() => {
+          if (!alive()) { clearInterval(iv); return; }
+          left--; val.textContent = left + " min";
+          if (left <= 0) {
+            clearInterval(iv); oven.classList.remove("baking");
+            instr.textContent = "Ding! The cookies are ready!"; say("");
+            setTimeout(() => alive() && decorate(), 1100);
+          }
+        }, 300);
+      });
+      stage.append(oven, timer, go);
+    }
+
+    function decorate() {
+      setStep(4); stage.textContent = ""; say("");
+      instr.textContent = "Decorate them! Tap each cookie to add icing.";
+      const tray = el("div", "cookies"); let left = 6;
+      for (let x = 0; x < 6; x++) {
+        const c = el("button", "ck"); c.type = "button"; c.setAttribute("aria-label", "Cookie"); c.appendChild(pic("cookie", "ckimg"));
+        c.addEventListener("click", () => {
+          if (c.classList.contains("iced")) return;
+          c.classList.add("iced"); left--;
+          if (!left) { setStep(5); instr.textContent = "Your Christmas cookies are ready! 🎉"; say("Well done, chef!", "ok"); finish(); }
+        });
+        tray.appendChild(c);
+      }
+      stage.append(tray);
+    }
+
+    add();
+  },
+
+  task(body, d, finish) {
+    body.append(d.hero ? pic(d.hero) : el("div", "big", d.icon)); head(body, d);
+    if (d.story) body.append(el("p", "story", d.story));
+    if (d.chips) { const c = el("div", "chips"); d.chips.forEach((x) => c.appendChild(el("span", "chip", x))); body.append(c); }
+    if (d.steps) { const ol = el("ol", "steps"); d.steps.forEach((st) => { const t = Array.isArray(st) ? st[0] : st; const li = el("li", null, t); if (Array.isArray(st)) li.prepend(pic(st[1], "cimg")); ol.appendChild(li); }); body.append(ol); }
+    if (d.pad) {
+      const COLORS = [["Red", "#D7263D"], ["Green", "#1E9A47"], ["Blue", "#2F7FD8"], ["Yellow", "#FFC53D"], ["Brown", "#8A5A2B"], ["Eraser", "#FFFFFF"]];
+      const SIZES = [["Thin", 4], ["Medium", 9], ["Thick", 18]];
+      let color = COLORS[0][1], size = SIZES[1][1], drawing = false, last = null; const undo = [];
+      const cv = el("canvas", "pad"); cv.width = 640; cv.height = 440; cv.setAttribute("aria-label", "Drawing pad");
+      const ctx = cv.getContext("2d");
+      const blank = () => { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height); };
+      blank();
+      const tools = el("div", "padtools"); const sw = [];
+      COLORS.forEach(([name, hex]) => {
+        const b = el("button", "swatch" + (hex === color ? " on" : ""), hex === "#FFFFFF" ? "🧽" : ""); b.type = "button"; b.style.background = hex; b.setAttribute("aria-label", name); b.title = name;
+        b.addEventListener("click", () => { color = hex; sw.forEach((x) => x.classList.toggle("on", x === b)); });
+        sw.push(b); tools.appendChild(b);
+      });
+      const sizes = el("div", "padtools"); const sz = [];
+      SIZES.forEach(([name, px]) => {
+        const b = el("button", "swatch size" + (px === size ? " on" : "")); b.type = "button"; b.setAttribute("aria-label", name + " brush"); b.title = name;
+        const dot = el("i"); dot.style.width = dot.style.height = (px + 4) + "px"; b.appendChild(dot);
+        b.addEventListener("click", () => { size = px; sz.forEach((x) => x.classList.toggle("on", x === b)); });
+        sz.push(b); sizes.appendChild(b);
+      });
+      const pos = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+      cv.addEventListener("pointerdown", (e) => {
+        e.preventDefault(); cv.setPointerCapture(e.pointerId); undo.push(ctx.getImageData(0, 0, cv.width, cv.height)); if (undo.length > 20) undo.shift();
+        drawing = true; last = pos(e); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(last[0], last[1], size / 2, 0, 7); ctx.fill();
+      });
+      cv.addEventListener("pointermove", (e) => {
+        if (!drawing) return; const p = pos(e);
+        ctx.strokeStyle = color; ctx.lineWidth = size; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p;
+      });
+      const stop = () => { drawing = false; };
+      cv.addEventListener("pointerup", stop); cv.addEventListener("pointercancel", stop);
+      const acts = el("div", "padtools");
+      const mk = (t, fn) => { const b = el("button", "btn", t); b.type = "button"; b.addEventListener("click", fn); acts.appendChild(b); return b; };
+      mk("↩️ Undo", () => { const s = undo.pop(); if (s) ctx.putImageData(s, 0, 0); });
+      mk("🗑️ Clear", () => { undo.push(ctx.getImageData(0, 0, cv.width, cv.height)); blank(); });
+      mk("💾 Save", () => { const a = el("a"); a.download = "my-christmas-tree.png"; a.href = cv.toDataURL("image/png"); a.click(); });
+      body.append(el("p", "scr padhint", "🎨 Your drawing pad"), tools, sizes, cv, acts);
+    }
+    if (d.template) { const t = el("textarea", "tpl"); t.id = "tpl"; t.rows = 7; t.value = d.template; body.append(t); }
+    if (d.link) { const a = el("a", "btn primary", d.link.label); a.href = d.link.url; a.target = "_blank"; a.rel = "noopener noreferrer"; body.append(a); }
+    const b = el("button", "btn primary", "I did it!"); b.type = "button";
+    b.addEventListener("click", () => { b.disabled = true; finish(); });
+    body.append(b);
+  },
+
+  certificate(body, d, finish) {
+    body.append(pic("santa-claus")); head(body, d);
+    const row = el("div", "row"); const inp = el("input"); inp.type = "text"; inp.id = "cname"; inp.placeholder = "Your name"; inp.autocomplete = "off";
+    const go = el("button", "btn primary", "Make my certificate"); go.type = "button";
+    const out = el("div");
+    go.addEventListener("click", () => {
+      const n = inp.value.trim(); if (!n) return;
+      out.textContent = "";
+      const c = el("div", "cert");
+      c.append(el("p", "ct", "Certificate"), el("p", "cs", "Christmas Star ⭐"), el("p", null, "awarded to"), el("p", "cn", n), el("p", null, "for completing the Advent Calendar"), el("p", "cm", "Merry Christmas! 🎅"));
+      out.appendChild(c); finish();
+    });
+    inp.addEventListener("keydown", (e) => { if (e.key === "Enter") go.click(); });
+    row.append(inp, go); body.append(row, out);
+  }
+};
+
+/* ---------- Modo profe ---------- */
+if (isTeacherLink) $("teacher").classList.add("on");
+$("tbtn").addEventListener("click", () => {
+  teacherMode = !teacherMode;
+  $("tbtn").textContent = teacherMode ? "Back to the real dates" : "Open every day to test";
+  renderStatus(); renderGrid();
+});
+
+renderStatus(); renderGrid();
+</script>
