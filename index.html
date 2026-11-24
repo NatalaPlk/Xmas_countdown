@@ -1062,7 +1062,7 @@ const GAMES = {
     if (d.chips) { const c = el("div", "chips"); d.chips.forEach((x) => c.appendChild(el("span", "chip", x))); body.append(c); }
     if (d.steps) { const ol = el("ol", "steps"); d.steps.forEach((st) => { const t = Array.isArray(st) ? st[0] : st; const li = el("li", null, t); if (Array.isArray(st)) li.prepend(pic(st[1], "cimg")); ol.appendChild(li); }); body.append(ol); }
     if (d.pad) {
-      const COLORS = [["Red", "#D7263D"], ["Green", "#1E9A47"], ["Blue", "#2F7FD8"], ["Yellow", "#FFC53D"], ["Brown", "#8A5A2B"], ["Eraser", "#FFFFFF"]];
+      const COLORS = [["Red", "#D7263D"], ["Green", "#1E9A47"], ["Blue", "#2F7FD8"], ["Yellow", "#FFC53D"], ["Brown", "#8A5A2B"], ["Rainbow", "rainbow"], ["Glitter", "glitter"], ["Eraser", "#FFFFFF"]];
       const SIZES = [["Thin", 4], ["Medium", 9], ["Thick", 18]];
       let color = COLORS[0][1], size = SIZES[1][1], drawing = false, last = null; const undo = [];
       const cv = el("canvas", "pad"); cv.width = 640; cv.height = 440; cv.setAttribute("aria-label", "Drawing pad");
@@ -1071,7 +1071,8 @@ const GAMES = {
       blank();
       const tools = el("div", "padtools"); const sw = [];
       COLORS.forEach(([name, hex]) => {
-        const b = el("button", "swatch" + (hex === color ? " on" : ""), hex === "#FFFFFF" ? "🧽" : ""); b.type = "button"; b.style.background = hex; b.setAttribute("aria-label", name); b.title = name;
+        const b = el("button", "swatch" + (hex === color ? " on" : ""), hex === "#FFFFFF" ? "🧽" : hex === "glitter" ? "✨" : ""); b.type = "button";
+        b.style.background = hex === "rainbow" ? "conic-gradient(#E63950, #FFC53D, #2CB352, #3AA7E8, #9B59D0, #E63950)" : hex === "glitter" ? "radial-gradient(circle, #fff 0 14%, #FFC53D 15% 60%, #FF9F1C 61%)" : hex; b.setAttribute("aria-label", name); b.title = name;
         b.addEventListener("click", () => { color = hex; sw.forEach((x) => x.classList.toggle("on", x === b)); });
         sw.push(b); tools.appendChild(b);
       });
@@ -1082,15 +1083,31 @@ const GAMES = {
         b.addEventListener("click", () => { size = px; sz.forEach((x) => x.classList.toggle("on", x === b)); });
         sz.push(b); sizes.appendChild(b);
       });
+      let hue = 0;
+      const sparkle = (x, y, r, c) => { ctx.fillStyle = c; ctx.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, rr = i % 2 ? r * 0.38 : r; ctx.lineTo(x + rr * Math.cos(a), y + rr * Math.sin(a)); } ctx.closePath(); ctx.fill(); };
+      const paint = (x0, y0, x1, y1) => {
+        if (color === "glitter") {
+          const n = Math.max(1, Math.floor(Math.hypot(x1 - x0, y1 - y0) / (size * 0.8)));
+          for (let i = 0; i <= n; i++) {
+            const t = i / n, x = x0 + (x1 - x0) * t + (Math.random() - 0.5) * size * 1.6, y = y0 + (y1 - y0) * t + (Math.random() - 0.5) * size * 1.6;
+            sparkle(x, y, size * (0.35 + Math.random() * 0.35), ["#FFC53D", "#FFFFFF", "#FF6B8B", "#7CC9E8", "#2CB352"][Math.floor(Math.random() * 5)]);
+          }
+          return;
+        }
+        ctx.lineWidth = size; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        if (color === "rainbow") { hue = (hue + 4) % 360; ctx.strokeStyle = "hsl(" + hue + " 90% 55%)"; } else { ctx.strokeStyle = color; }
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      };
       const pos = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
       cv.addEventListener("pointerdown", (e) => {
         e.preventDefault(); cv.setPointerCapture(e.pointerId); undo.push(ctx.getImageData(0, 0, cv.width, cv.height)); if (undo.length > 20) undo.shift();
-        drawing = true; last = pos(e); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(last[0], last[1], size / 2, 0, 7); ctx.fill();
+        drawing = true; last = pos(e);
+        if (color === "rainbow" || color === "glitter") { paint(last[0], last[1], last[0] + 0.5, last[1] + 0.5); }
+        else { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(last[0], last[1], size / 2, 0, 7); ctx.fill(); }
       });
       cv.addEventListener("pointermove", (e) => {
         if (!drawing) return; const p = pos(e);
-        ctx.strokeStyle = color; ctx.lineWidth = size; ctx.lineCap = "round"; ctx.lineJoin = "round";
-        ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p;
+        paint(last[0], last[1], p[0], p[1]); last = p;
       });
       const stop = () => { drawing = false; };
       cv.addEventListener("pointerup", stop); cv.addEventListener("pointercancel", stop);
