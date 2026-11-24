@@ -328,6 +328,14 @@ footer { color: #BFE6D0; }
   mask-composite: intersect;
 }
 
+/* Help button (opens after 3 wrong tries) */
+.row { flex-wrap: wrap; }
+.card .btn.help { background: #FFF1B8; border-color: #E59A0C; box-shadow: 0 4px 0 #B87500; color: #5A3A00; }
+.card .btn.help:disabled { opacity: .45; box-shadow: none; }
+.card .btn.help.ready { animation: helpPulse 1.2s ease-in-out infinite; }
+@keyframes helpPulse { 50% { transform: scale(1.07); box-shadow: 0 4px 0 #B87500, 0 0 16px 4px rgba(255, 197, 61, .8); } }
+@media (prefers-reduced-motion: reduce) { .card .btn.help.ready { animation: none; } }
+
 /* Spot the difference pictures */
 .spotwrap { position: relative; width: 100%; border-radius: 16px; overflow: hidden; border: 4px solid #2F9E63; box-shadow: 0 3px 0 #1E7A4A; cursor: crosshair; line-height: 0; }
 .spotimg { width: 100%; height: auto; display: block; user-select: none; -webkit-user-drag: none; }
@@ -595,19 +603,33 @@ function head(body, d) {
   if (d.challenge) body.append(el("p", "chal", "Challenge: " + d.challenge));
   if (d.vocab) body.append(vstrip(d.vocab));
 }
-function answerBox(body, check, onOk) {
+function answerBox(body, check, onOk, helpText) {
   const row = el("div", "row");
   const inp = el("input"); inp.type = "text"; inp.id = "ans"; inp.autocomplete = "off"; inp.placeholder = "Your answer";
   const go = el("button", "btn primary", "Check"); go.type = "button";
   const msg = el("p", "msg");
+  let fails = 0, helpBtn = null;
   const run = () => {
     if (!inp.value.trim()) return;
-    if (check(inp.value)) { msg.className = "msg ok"; msg.textContent = "Correct!"; inp.disabled = true; go.disabled = true; onOk(); }
-    else { msg.className = "msg bad"; msg.textContent = "Try again!"; inp.select(); }
+    if (check(inp.value)) { msg.className = "msg ok"; msg.textContent = "Correct!"; inp.disabled = true; go.disabled = true; if (helpBtn) helpBtn.disabled = true; onOk(); }
+    else {
+      fails++; msg.className = "msg bad"; msg.textContent = "Try again!"; inp.select();
+      if (helpBtn && fails >= 3 && helpBtn.disabled) { helpBtn.disabled = false; helpBtn.classList.add("ready"); msg.textContent = "Try again! You can press Help! 💡"; }
+    }
   };
   go.addEventListener("click", run);
   inp.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
-  row.append(inp, go); body.append(row, msg);
+  row.append(inp, go);
+  if (helpText) {
+    helpBtn = el("button", "btn help", "💡 Help!"); helpBtn.type = "button"; helpBtn.disabled = true;
+    helpBtn.setAttribute("aria-label", "Help (opens after 3 wrong tries)");
+    helpBtn.addEventListener("click", () => {
+      msg.className = "msg ok"; msg.textContent = "💡 The answer is: " + helpText.toUpperCase() + ". Now type it!";
+      inp.value = ""; inp.focus(); helpBtn.disabled = true; helpBtn.classList.remove("ready");
+    });
+    row.appendChild(helpBtn);
+  }
+  body.append(row, msg);
   return inp;
 }
 
@@ -639,7 +661,7 @@ function seq(body, items, finish) {
       box.append(wrap, msg);
     } else {
       const ok = it.a.map(strip);
-      const inp = answerBox(box, (v) => ok.includes(strip(v)), () => { if (it.reveal) box.append(pic(it.reveal)); next(); });
+      const inp = answerBox(box, (v) => ok.includes(strip(v)), () => { if (it.reveal) box.append(pic(it.reveal)); next(); }, it.a[0]);
       inp.focus();
     }
   };
