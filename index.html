@@ -763,11 +763,15 @@ const GAMES = {
     }
     const foundSet = new Set(); let start = null; let fails = 0;
     const help = el("button", "btn help", "💡 Help!"); help.type = "button"; help.disabled = true; help.setAttribute("aria-label", "Help (opens after 3 wrong tries)");
+    const hintCells = (w) => { const [r0, c0, dr, dc] = pos[w]; return Array.from({ length: w.length }, (_, k) => btn[(r0 + dr * k) + "," + (c0 + dc * k)]); };
+    let hw = null, hk = 0;
     help.addEventListener("click", () => {
       const w = words.find((x) => !foundSet.has(x)); if (!w || !pos[w]) return;
-      const b = btn[pos[w][0] + "," + pos[w][1]];
-      b.classList.add("hint"); setTimeout(() => b.classList.remove("hint"), 4000);
-      msg.className = "msg ok"; msg.textContent = "💡 Look for " + w + ". It starts at the shining letter!";
+      if (hw !== w) { if (hw && pos[hw]) hintCells(hw).forEach((x) => x.classList.remove("hint")); hw = w; hk = 0; }
+      hk = Math.min(hk + 1, w.length);
+      hintCells(w).slice(0, hk).forEach((x) => x.classList.add("hint"));
+      msg.className = "msg ok";
+      msg.textContent = hk < w.length ? "💡 Look for " + w + ". " + hk + " shining letter" + (hk > 1 ? "s" : "") + " (press Help! for the next one)" : "💡 All the letters of " + w + " are shining! Tap the first and the last one.";
     });
     function pick(r, c) {
       if (!start) { start = [r, c]; btn[r + "," + c].classList.add("sel"); return; }
@@ -781,6 +785,7 @@ const GAMES = {
       const w = words.find((x) => x === s || x === rev);
       if (w && !foundSet.has(w)) {
         foundSet.add(w); cells.forEach((x) => x.classList.add("fnd")); chipOf[w].classList.add("got");
+        if (hw === w) { cells.forEach((x) => x.classList.remove("hint")); hw = null; hk = 0; }
         msg.className = "msg ok"; msg.textContent = "You found " + w + "!";
         if (foundSet.size === words.length) { msg.textContent = "You found all the words!"; help.disabled = true; help.classList.remove("ready"); finish(); }
       } else {
