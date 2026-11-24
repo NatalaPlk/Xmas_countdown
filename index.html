@@ -329,6 +329,9 @@ footer { color: #BFE6D0; }
 }
 
 /* Help button (opens after 3 wrong tries) */
+.card .wc.hint { background: #FFC53D; animation: hintGlow .8s ease-in-out infinite; position: relative; z-index: 1; }
+@keyframes hintGlow { 50% { transform: scale(1.25); box-shadow: 0 0 14px 5px rgba(255, 197, 61, .9); } }
+@media (prefers-reduced-motion: reduce) { .card .wc.hint { animation: none; outline: 3px solid #E59A0C; } }
 .row { flex-wrap: wrap; }
 .card .btn.help { background: #FFF1B8; border-color: #E59A0C; box-shadow: 0 4px 0 #B87500; color: #5A3A00; }
 .card .btn.help:disabled { opacity: .45; box-shadow: none; }
@@ -717,9 +720,9 @@ const GAMES = {
   wordsearch(body, d, finish) {
     head(body, d);
     const N = 10, words = d.words;
-    let grid;
+    let grid, pos = {};
     for (let attempt = 0; attempt < 30; attempt++) {
-      grid = Array.from({ length: N }, () => Array(N).fill(""));
+      grid = Array.from({ length: N }, () => Array(N).fill("")); pos = {};
       let ok = true;
       for (const w of words.slice().sort((a, b) => b.length - a.length)) {
         let placed = false;
@@ -731,6 +734,7 @@ const GAMES = {
           for (let k = 0; k < w.length; k++) { const ch = grid[r + dr * k][c + dc * k]; if (ch && ch !== w[k]) { fit = false; break; } }
           if (!fit) continue;
           for (let k = 0; k < w.length; k++) grid[r + dr * k][c + dc * k] = w[k];
+          pos[w] = [r, c, dr, dc];
           placed = true;
         }
         if (!placed) { ok = false; break; }
@@ -747,7 +751,14 @@ const GAMES = {
       b.addEventListener("click", () => pick(r, c));
       gEl.appendChild(b);
     }
-    const foundSet = new Set(); let start = null;
+    const foundSet = new Set(); let start = null; let fails = 0;
+    const help = el("button", "btn help", "💡 Help!"); help.type = "button"; help.disabled = true; help.setAttribute("aria-label", "Help (opens after 3 wrong tries)");
+    help.addEventListener("click", () => {
+      const w = words.find((x) => !foundSet.has(x)); if (!w || !pos[w]) return;
+      const b = btn[pos[w][0] + "," + pos[w][1]];
+      b.classList.add("hint"); setTimeout(() => b.classList.remove("hint"), 4000);
+      msg.className = "msg ok"; msg.textContent = "💡 Look for " + w + ". It starts at the shining letter!";
+    });
     function pick(r, c) {
       if (!start) { start = [r, c]; btn[r + "," + c].classList.add("sel"); return; }
       const [r0, c0] = start; btn[r0 + "," + c0].classList.remove("sel"); start = null;
@@ -761,10 +772,13 @@ const GAMES = {
       if (w && !foundSet.has(w)) {
         foundSet.add(w); cells.forEach((x) => x.classList.add("fnd")); chipOf[w].classList.add("got");
         msg.className = "msg ok"; msg.textContent = "You found " + w + "!";
-        if (foundSet.size === words.length) { msg.textContent = "You found all the words!"; finish(); }
-      } else { msg.className = "msg bad"; msg.textContent = "Not a word. Try again!"; }
+        if (foundSet.size === words.length) { msg.textContent = "You found all the words!"; help.disabled = true; help.classList.remove("ready"); finish(); }
+      } else {
+        fails++; msg.className = "msg bad"; msg.textContent = "Not a word. Try again!";
+        if (fails >= 3 && help.disabled && foundSet.size < words.length) { help.disabled = false; help.classList.add("ready"); msg.textContent += " You can press Help! 💡"; }
+      }
     }
-    body.append(list, gEl, msg);
+    body.append(list, gEl, help, msg);
   },
 
   match(body, d, finish) {
