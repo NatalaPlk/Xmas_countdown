@@ -192,6 +192,8 @@ h1 span { color: var(--berry); }
 @keyframes pop { from { transform: scale(.3); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .bowl.stir, .pic.baking, .ck { animation: none; } }
 footer { text-align: center; color: var(--muted); font-size: .85rem; }
+.tlink { display: inline-block; margin-top: 8px; padding: 6px 14px; border-radius: 99px; border: 2px solid var(--line); color: var(--muted); text-decoration: none; font-weight: 700; }
+.tlink:hover { border-color: var(--gold); color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .hot.today { animation: none; } .bar i { transition: none; } }
 
 /* ---------- Festive game card (light, with holly frame) ---------- */
@@ -322,7 +324,7 @@ footer { text-align: center; color: var(--muted); font-size: .85rem; }
     <button id="tbtn" type="button">Open every day to test</button>
   </div>
   <div class="board"><img src="calendar.webp" alt="Countdown to Christmas: doors numbered 1 to 25" draggable="false"><div class="hots" id="grid"></div></div>
-  <footer>Every number hides a game or a prize. Find today’s number.</footer>
+  <footer>Every number hides a game or a prize. Find today’s number.<br><a class="tlink" href="/teacher">🔑 Teachers</a></footer>
 </div>
 <div id="modal" class="modal" hidden></div>
 <div id="toast" class="toast" role="status" hidden></div>
@@ -458,7 +460,7 @@ const todayN = (() => {
   return Math.floor((t - startMs) / 86400000) + 1; // 1 = 1 de diciembre
 })();
 let teacherMode = false;
-const isTeacherLink = location.hash === "#profe";
+const isTeacherLink = location.pathname.replace(/\/+$/, "") === "/teacher";
 const unlocked = (n) => teacherMode || todayN >= n;
 
 function norm(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim(); }
@@ -1103,7 +1105,7 @@ const GAMES = {
 };
 
 /* ---------- Modo profe ---------- */
-if (isTeacherLink) $("teacher").classList.add("on");
+if (isTeacherLink) { $("teacher").classList.add("on"); teacherMode = true; $("tbtn").textContent = "Back to the real dates"; }
 $("tbtn").addEventListener("click", () => {
   teacherMode = !teacherMode;
   $("tbtn").textContent = teacherMode ? "Back to the real dates" : "Open every day to test";
