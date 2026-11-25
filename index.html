@@ -451,9 +451,17 @@ const DAYS = [
       { q: "It's a game with many pieces.", a: ["puzzle", "a puzzle", "jigsaw", "jigsaw puzzle"], reveal: "puzzle" },
       { q: "It's a toy with four wheels.", a: ["toy car", "car", "a toy car", "a car"], reveal: "toy-car" }
     ] },
-  { t: "task", icon: "🎶", title: "Christmas Song", hero: "jingle-bells", intro: "Listen to a Christmas song and sing along!",
-    steps: ["Play a Christmas song in English, like Jingle Bells or We Wish You a Merry Christmas.", "Open the karaoke video and sing along.", "Try to complete the missing words of the lyrics."],
-    link: { url: YT("Jingle Bells karaoke for kids lyrics"), label: "Open a karaoke video" }, challenge: "Can you sing the whole song in English?" },
+  { t: "songquiz", icon: "🎶", title: "Christmas Song", hero: "jingle-bells", intro: "Sing Jingle Bells! Then choose the missing words.",
+    link: { url: "https://www.youtube.com/watch?v=eQ34DSTjsLQ", label: "▶ Sing along: Jingle Bells" }, challenge: "Can you sing the whole song in English?",
+    items: [
+      { q: "Dashing through the ___", o: ["snow", "rain", "sand", "grass"], c: "snow" },
+      { q: "In a one-horse open ___", o: ["car", "sleigh", "boat", "bus"], c: "sleigh" },
+      { q: "O'er the fields we go, ___ all the way", o: ["laughing", "sleeping", "crying", "eating"], c: "laughing" },
+      { q: "Bells on bobtails ___, making spirits bright", o: ["ring", "jump", "fall", "swim"], c: "ring" },
+      { q: "What fun it is to ride and ___, a sleighing song tonight", o: ["sing", "run", "cook", "draw"], c: "sing" },
+      { q: "Jingle bells, jingle bells, jingle all the ___", o: ["door", "day", "way", "night"], c: "way" },
+      { q: "Oh what ___ it is to ride in a one-horse open sleigh", o: ["fun", "cold", "dark", "hungry"], c: "fun" }
+    ] },
   { t: "task", icon: "🎨", title: "Drawing Challenge", hero: "draw", pad: true, intro: "Draw your dream Christmas tree!",
     steps: [["Draw a Christmas tree.", "christmas-tree"], ["Decorate it with 5 ornaments.", "ornament"], ["Add a star, presents and colourful lights.", "lights"], ["Write 3 English words about your drawing.", "draw"]], challenge: "Can you describe your Christmas tree in English?" },
   { t: "task", icon: "💌", title: "Santa's Message", hero: "dear-santa", intro: "Write a short letter to Santa! Use this template:",
@@ -714,6 +722,13 @@ const DIFFS = [[22, 22], [40, 40], [100, 87], [149, 99], [62, 134]];
 
 const GAMES = {
   seq(body, d, finish) { head(body, d); seq(body, d.items, finish); },
+
+  songquiz(body, d, finish) {
+    body.append(pic(d.hero)); head(body, d);
+    const a = el("a", "btn primary", d.link.label); a.href = d.link.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+    body.append(a, el("p", "prog", "Sing first. Then fill in the missing words!"));
+    seq(body, d.items, finish);
+  },
 
   storyquiz(body, d, finish) {
     body.append(pic(d.hero)); head(body, d);
