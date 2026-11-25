@@ -320,9 +320,11 @@ button, .btn, .wc, .key, .mc, .swatch, .hot { touch-action: manipulation; -webki
 }
 
 /* ---------- Page background: same green as the calendar picture ---------- */
-html { background: #04524A; }
-body { background: radial-gradient(ellipse at 50% 32%, #0B6B52 0%, #04524A 52%, #023F3B 100%) fixed; color: #F4FFF4; padding-block: 36px 56px; }
-.wrap { gap: 34px; }
+html { background: #1E792C; }
+body { background: #1E792C; color: #F4FFF4; padding-block: 36px 56px; }
+.wrap { gap: 44px; }
+.brand { display: flex; justify-content: center; margin-top: 6px; }
+.brand img { width: min(380px, 78%); height: auto; display: block; }
 .status, .progress { color: #CFF3DF; }
 .bar { background: rgba(255, 255, 255, .25); }
 .bar i { background: #FFC53D; }
@@ -382,6 +384,7 @@ footer { color: #BFE6D0; }
     <button id="tbtn" type="button">Open every day to test</button>
   </div>
   <div class="board"><img src="calendar.webp" alt="Countdown to Christmas: doors numbered 1 to 25" draggable="false"><div class="hots" id="grid"></div></div>
+  <div class="brand"><img src="frame/oxford-logo.webp" alt="Oxford Language School — Official Preparation Centre"></div>
   <footer>Every number hides a game or a prize. Find today’s number.<br><a class="tlink" href="/teacher">🔑 Teachers</a></footer>
 </div>
 <div id="modal" class="modal" hidden></div>
