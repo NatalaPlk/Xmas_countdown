@@ -462,7 +462,7 @@ const DAYS = [
       { q: "Jingle bells, jingle bells, jingle all the ___", o: ["door", "day", "way", "night"], c: "way" },
       { q: "Oh what ___ it is to ride in a one-horse open sleigh", o: ["fun", "cold", "dark", "hungry"], c: "fun" }
     ] },
-  { t: "task", icon: "🎨", title: "Drawing Challenge", hero: "draw", pad: true, intro: "Draw your dream Christmas tree!",
+  { t: "task", icon: "🎨", title: "Drawing Challenge", hero: "draw", pad: true, write3: true, intro: "Draw your dream Christmas tree!",
     steps: [["Draw a Christmas tree.", "christmas-tree"], ["Decorate it with 5 ornaments.", "ornament"], ["Add a star, presents and colourful lights.", "lights"], ["Write 3 English words about your drawing.", "draw"]], challenge: "Can you describe your Christmas tree in English?" },
   { t: "task", icon: "💌", title: "Santa's Message", hero: "dear-santa", intro: "Write a short letter to Santa! Use this template:",
     template: "Dear Santa,\nMy name is ...\nThis Christmas I would like ...\nMy favourite Christmas activity is ...\nThank you, Santa!\nLove, ...", challenge: "Can you write your own Christmas letter?" },
@@ -1267,6 +1267,33 @@ const GAMES = {
     if (d.link) { const a = el("a", "btn primary", d.link.label); a.href = d.link.url; a.target = "_blank"; a.rel = "noopener noreferrer"; body.append(a); }
     const b = el("button", "btn primary", "I did it!"); b.type = "button";
     b.addEventListener("click", () => { b.disabled = true; finish(); });
+    if (d.write3) {
+      // Three Christmas words with a spelling check after the tick.
+      const WORDS = "tree star present presents gift gifts light lights ornament ornaments bell bells snow snowman snowflake santa claus reindeer sleigh stocking stockings candle candy cane cookie cookies gingerbread elf angel wreath holly ribbon bow chimney fireplace christmas winter red green gold silver blue yellow white pink purple orange colour colourful bright shiny happy merry jolly cozy cold warm family friends love joy peace music song carol dinner turkey cake sweets mittens scarf hat socks boots rudolph nose antlers north pole toys toy doll teddy ball box paper card letter night eve day magic dream wish angel moon sky ice icicle fire pine fir leaf star decoration decorations lamp garland tinsel".split(" ");
+      const lev = (a, c) => { const m = []; for (let i = 0; i <= a.length; i++) { m[i] = [i]; } for (let j = 1; j <= c.length; j++) m[0][j] = j;
+        for (let i = 1; i <= a.length; i++) for (let j = 1; j <= c.length; j++) m[i][j] = Math.min(m[i-1][j] + 1, m[i][j-1] + 1, m[i-1][j-1] + (a[i-1] === c[j-1] ? 0 : 1)); return m[a.length][c.length]; };
+      const box = el("div", "w3"); box.append(el("p", "scr padhint", "✍️ Write 3 Christmas words about your drawing"));
+      const rows = [0, 1, 2].map((k) => {
+        const r = el("div", "row"); const inp = el("input"); inp.type = "text"; inp.placeholder = "Word " + (k + 1); inp.autocomplete = "off"; inp.autocapitalize = "none"; inp.spellcheck = false; inp.setAttribute("aria-label", "Word " + (k + 1));
+        const fb = el("p", "msg"); r.append(inp); box.append(r, fb); return { inp, fb };
+      });
+      const tick = el("button", "btn primary", "✔ Check my words"); tick.type = "button"; const sum = el("p", "msg");
+      tick.addEventListener("click", () => {
+        const vals = rows.map((r) => r.inp.value.trim().toLowerCase().replace(/[^a-z ]/g, ""));
+        if (vals.some((v) => !v)) { sum.className = "msg bad"; sum.textContent = "Write 3 words first!"; return; }
+        let good = 0;
+        rows.forEach((r, i) => {
+          const v = vals[i];
+          if (WORDS.includes(v)) { good++; r.inp.value = v; r.fb.className = "msg ok"; r.fb.textContent = "✅ " + v + " — perfect!"; return; }
+          let best = null, bd = 99; WORDS.forEach((w) => { const dd = lev(v, w); if (dd < bd) { bd = dd; best = w; } });
+          if (best && bd <= (v.length <= 4 ? 1 : 2)) { r.inp.value = best; r.fb.className = "msg bad"; r.fb.textContent = "✏️ Almost! It is written: " + best; }
+          else { r.fb.className = "msg"; r.fb.textContent = "🤔 I do not know \"" + v + "\". Ask your teacher to check it!"; good++; }
+        });
+        sum.className = "msg ok"; sum.textContent = "Well done! Now press the button below."; b.disabled = false; tick.disabled = false;
+      });
+      b.disabled = true;
+      box.append(tick, sum); body.append(box);
+    }
     body.append(b);
   },
 
