@@ -403,7 +403,7 @@ const DAYS = [
       { q: "What does Santa travel in?", o: ["A sleigh", "A car", "A plane"], c: "A sleigh", img: "sleigh" },
       { q: "What do we put inside a stocking?", o: ["Presents", "Sand", "Water"], c: "Presents", img: "stocking" }
     ] },
-  { t: "missing", icon: "🎁", title: "What's Missing?", intro: "Look carefully at the 6 Christmas objects. Remember them! You have 10 seconds.", challenge: "What's missing?" },
+  { t: "missing", icon: "🎁", title: "What's Missing?", intro: "Look carefully at the 6 Christmas objects. Remember them! You have 30 seconds, or press Ready when you know them.", challenge: "What's missing?" },
   { t: "hangman", icon: "☃️", title: "Christmas Hangman", intro: "Guess the hidden Christmas word! Choose letters one by one. You have 6 wrong guesses.", challenge: "Can you guess all 5 words?",
     words: [["TREE", "You decorate it at Christmas.", "christmas-tree"], ["SANTA", "He brings presents on Christmas Eve.", "santa-claus"], ["SNOW", "It is white and cold. It falls from the sky.", "snow"], ["STAR", "It shines at the top of the tree.", "star"], ["GIFT", "You open it on Christmas Day.", "present-gift"]] },
   { t: "seq", icon: "🕵️", title: "Guess Who? Christmas Characters", intro: "Read the clues and guess the Christmas character!", challenge: "Can you guess all 5 characters?",
@@ -926,12 +926,12 @@ const GAMES = {
     const show = el("div", "emoset"); const info = el("p", "scr"); const msg = el("p", "msg"); const opts = el("div", "opts pics");
     body.append(info, show, msg, opts);
     six.forEach((e) => show.appendChild(pic(e, "vimg")));
-    let t = 10; info.textContent = t;
-    const iv = setInterval(() => {
-      if (!info.isConnected) { clearInterval(iv); return; }
-      t--; info.textContent = t;
-      if (t > 0) return;
-      clearInterval(iv);
+    let t = 30; info.textContent = t;
+    let done = false; let iv = null;
+    const ready = el("button", "btn primary", "I'm ready!"); ready.type = "button";
+    body.insertBefore(ready, msg);
+    const startQuiz = () => {
+      if (done) return; done = true; clearInterval(iv); ready.remove();
       info.textContent = "What's missing?"; info.style.letterSpacing = "0"; info.style.fontSize = "1.4rem";
       show.textContent = ""; six.filter((e) => e !== gone).forEach((e) => show.appendChild(pic(e, "vimg")));
       choices.forEach((e) => {
@@ -942,6 +942,12 @@ const GAMES = {
         });
         opts.appendChild(b);
       });
+    };
+    ready.addEventListener("click", startQuiz);
+    iv = setInterval(() => {
+      if (!info.isConnected) { clearInterval(iv); return; }
+      t--; info.textContent = t;
+      if (t <= 0) startQuiz();
     }, 1000);
   },
 
@@ -1266,6 +1272,9 @@ const GAMES = {
     });
     inp.addEventListener("keydown", (e) => { if (e.key === "Enter") go.click(); });
     row.append(inp, go); body.append(row, out);
+    const fam = el("a", "btn primary", "👨‍👩‍👧 Play together as a family: Christmas Yoga Freeze Dance");
+    fam.href = "https://www.youtube.com/watch?v=P0KjRThyGcM"; fam.target = "_blank"; fam.rel = "noopener noreferrer";
+    body.append(el("p", "prog", "One more thing! Play this game with your family:"), fam);
   }
 };
 
