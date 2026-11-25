@@ -1345,10 +1345,18 @@ const GAMES = {
       const W = cv.width, H = cv.height; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
       const write = (text, cx, cy, max, size, fill, stroke, sw) => { fit(ctx, text, max, size, "700"); if (stroke) { ctx.lineWidth = sw; ctx.strokeStyle = stroke; ctx.strokeText(text, cx, cy); } ctx.fillStyle = fill; ctx.fillText(text, cx, cy); };
       write("CERTIFICATE", W * 0.5, H * 0.163, W * 0.56, 78, "#9B1428", "#FFF3C4", 8);
-      write(n, W * 0.5, H * 0.505, W * 0.7, 150, "#1D5A35", "#FFF6DF", 12);
-      write("for completing the", W * 0.5, H * 0.635, W * 0.62, 50, "#5A3A12");
-      write("Advent Calendar", W * 0.5, H * 0.69, W * 0.62, 58, "#5A3A12");
-      write("Merry Christmas!", W * 0.5, H * 0.765, W * 0.5, 56, "#C8102E", "#FFFFFF", 6);
+      // The name follows the gentle downward curve of the scroll plate.
+      const K = 0.000522, curveY = (x) => 654 - K * (x - 500) * (x - 500);
+      let nsz = 150, widths = [], total = 0;
+      do { ctx.font = "700 " + nsz + "px Fredoka, Nunito, sans-serif"; widths = n.split("").map((ch) => ctx.measureText(ch).width); total = widths.reduce((p, q) => p + q, 0); nsz -= 4; } while (total > 560 && nsz > 28);
+      let px = W / 2 - total / 2;
+      n.split("").forEach((ch, i) => {
+        const cx = px + widths[i] / 2; px += widths[i];
+        ctx.save(); ctx.translate(cx, curveY(cx)); ctx.rotate(Math.atan(-2 * K * (cx - 500)));
+        ctx.lineWidth = 12; ctx.strokeStyle = "#FFF6DF"; ctx.strokeText(ch, 0, 0); ctx.fillStyle = "#1D5A35"; ctx.fillText(ch, 0, 0); ctx.restore();
+      });
+      write("for completing the", W * 0.5, H * 0.655, W * 0.6, 54, "#5A3A12");
+      write("Oxford Countdown to Christmas", W * 0.5, H * 0.72, W * 0.66, 60, "#9B1428", "#FFF6DF", 6);
       out.textContent = "";
       const save = el("button", "btn", "💾 Save my certificate"); save.type = "button";
       save.addEventListener("click", () => { const l = el("a"); l.download = "christmas-certificate-" + n.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".png"; l.href = cv.toDataURL("image/png"); l.click(); });
