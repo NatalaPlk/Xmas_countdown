@@ -547,7 +547,19 @@ function makeDoor(n, cls) {
   b.setAttribute("aria-label", "Door " + n + (open ? "" : ", still locked"));
   if (!open) b.classList.add("locked");
   if (open && n === todayN && !teacherMode) b.classList.add("today");
-  b.addEventListener("click", () => openDoor(n));
+  let peekTimer = null;
+  b.addEventListener("click", () => {
+    // An already-opened door: the first tap shows which day it is; a second tap (within 3 s) plays it.
+    if (open && state.opened[n] && !peekTimer) {
+      const ic = b.querySelector(".ic");
+      if (ic) { ic.textContent = String(n); ic.style.fontWeight = "900"; }
+      toast("Day " + n + " · " + d.title + " — tap again to play");
+      peekTimer = setTimeout(() => { peekTimer = null; if (ic) { ic.textContent = iconFor(d); ic.style.fontWeight = ""; } }, 3000);
+      return;
+    }
+    if (peekTimer) { clearTimeout(peekTimer); peekTimer = null; }
+    openDoor(n);
+  });
   if (state.opened[n]) b.appendChild(el("span", "ic", iconFor(d)));
   if (state.done[n]) b.appendChild(el("span", "ok", "✔"));
   return b;
