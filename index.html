@@ -1247,7 +1247,6 @@ const GAMES = {
 
   task(body, d, finish) {
     body.append(d.hero ? pic(d.hero) : el("div", "big", d.icon)); head(body, d);
-    if (d.link) { const a = el("a", "btn primary", d.link.label); a.href = d.link.url; a.target = "_blank"; a.rel = "noopener noreferrer"; body.append(a); }
     if (d.story) body.append(el("p", "story", d.story));
     if (d.chips) { const c = el("div", "chips"); d.chips.forEach((x) => c.appendChild(el("span", "chip", x))); body.append(c); }
     if (d.steps) { const ol = el("ol", "steps"); d.steps.forEach((st) => { const t = Array.isArray(st) ? st[0] : st; const li = el("li", null, t); if (Array.isArray(st)) li.prepend(pic(st[1], "cimg")); ol.appendChild(li); }); body.append(ol); }
