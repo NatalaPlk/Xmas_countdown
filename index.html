@@ -518,6 +518,13 @@ let teacherMode = false;
 const isTeacherLink = location.pathname.replace(/\/+$/, "") === "/teacher";
 const unlocked = (n) => teacherMode || todayN >= n;
 
+function editDist(a, b) {
+  const m = []; for (let i = 0; i <= a.length; i++) m[i] = [i];
+  for (let j = 1; j <= b.length; j++) m[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return m[a.length][b.length];
+}
 function norm(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim(); }
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
@@ -1064,7 +1071,16 @@ const GAMES = {
     const run = () => {
       const k = strip(inp.value); if (!k) return;
       if (found.has(k)) { msg.className = "msg bad"; msg.textContent = "You already wrote that one."; }
-      else if (!ok.includes(k)) { msg.className = "msg bad"; msg.textContent = "Hmm, not on my list. Try another winter word!"; }
+      else if (!ok.includes(k)) {
+        // Spelling check: find the closest word on the list and point at the first wrong letter.
+        let best = null, bd = 99;
+        ok.forEach((w) => { const dd = editDist(k, w); if (dd < bd) { bd = dd; best = w; } });
+        if (best && bd <= (k.length <= 4 ? 1 : 2) && bd > 0) {
+          let i = 0; while (i < k.length && i < best.length && k[i] === best[i]) i++;
+          msg.className = "msg bad";
+          msg.textContent = "Almost! You are close. Look at letter " + (i + 1) + " (\"" + (k[i] || "") + "\") and try again!";
+        } else { msg.className = "msg bad"; msg.textContent = "Hmm, not on my list. Try another winter word!"; }
+      }
       else {
         found.add(k); { const chip = el("span", "chip got", k); if (d.pics && d.pics[k]) chip.prepend(pic(d.pics[k], "cimg")); chips.appendChild(chip); } cnt.textContent = found.size + " of " + d.need;
         msg.className = "msg ok"; msg.textContent = "Nice!";
