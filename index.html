@@ -1302,7 +1302,10 @@ const GAMES = {
           const v = vals[i];
           if (WORDS.includes(v)) { good++; r.inp.value = v; r.fb.className = "msg ok"; r.fb.textContent = "✅ " + v + " — perfect!"; return; }
           let best = null, bd = 99; WORDS.forEach((w) => { const dd = lev(v, w); if (dd < bd) { bd = dd; best = w; } });
-          if (best && bd <= (v.length <= 4 ? 1 : 2)) { r.inp.value = best; r.fb.className = "msg bad"; r.fb.textContent = "✏️ Almost! It is written: " + best; }
+          if (best && bd <= (v.length <= 4 ? 1 : 2) && bd > 0) {
+            let i = 0; while (i < v.length && i < best.length && v[i] === best[i]) i++;
+            r.fb.className = "msg bad"; r.fb.textContent = "✏️ Almost! You are close. Look at letter " + (i + 1) + " (\"" + (v[i] || "") + "\") and try again!";
+          }
           else { r.fb.className = "msg"; r.fb.textContent = "🤔 I do not know \"" + v + "\". Ask your teacher to check it!"; good++; }
         });
         sum.className = "msg ok"; sum.textContent = "Well done! Now press the button below."; b.disabled = false; tick.disabled = false;
