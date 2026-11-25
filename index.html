@@ -466,9 +466,15 @@ const DAYS = [
     ] },
   { t: "words", icon: "❄️", title: "Winter Words", intro: "Name 5 things you can see in winter! Type one word at a time.", challenge: "Can you name 5 winter words in English?", need: 5, pics: { snow: "snow", snowman: "snowman", scarf: "scarf", gloves: "gloves", glove: "gloves", boots: "boots", boot: "boots", snowflake: "snowflake", snowflakes: "snowflake", ice: "ice", coat: "coat", hat: "hat", mittens: "mittens", icicle: "icicle" },
     valid: ["snow", "snowman", "scarf", "gloves", "glove", "boots", "boot", "snowflake", "snowflakes", "ice", "coat", "hat", "mittens", "jacket", "sled", "sledge", "snowball", "icicle", "sweater", "jumper", "winter", "penguin", "fireplace"] },
-  { t: "task", icon: "🎬", title: "Christmas Movie", hero: "find", intro: "Watch a short Christmas video in English!",
-    steps: ["Choose a short Christmas animation or story and watch it.", "Listen carefully.", "Answer: Who is the main character?", "Answer: Where does the story happen?", "Answer: What happens at the end?"],
-    link: { url: YT("short christmas animation for kids in English"), label: "Open a Christmas video" }, challenge: "Can you understand the Christmas story?" },
+  { t: "videoquiz", icon: "🎬", title: "Christmas Movie", hero: "reindeer", intro: "Watch the story of Santa's reindeer. Then answer 5 questions!",
+    link: { url: "https://www.youtube.com/watch?v=MdTYH4ag_f4", label: "▶ Watch the video (5 min)" }, challenge: "Can you understand the Christmas story?",
+    items: [
+      { q: "How did Santa deliver gifts before he met the reindeer?", img: "santa-claus", o: ["On foot, with a magical sack", "By plane", "In a big truck", "On a bicycle"], c: "On foot, with a magical sack" },
+      { q: "How many reindeer were in Santa's first team?", img: "reindeer", o: ["Six", "Seven", "Eight", "Nine"], c: "Eight", fixed: true },
+      { q: "Which reindeer is the fastest and leads the team?", img: "sleigh", o: ["Dasher", "Dancer", "Comet", "Donner"], c: "Dasher" },
+      { q: "Why was Rudolph special?", img: "rudolph", o: ["He had a glowing red nose", "He had golden wings", "He was the biggest reindeer", "He could sing very loudly"], c: "He had a glowing red nose" },
+      { q: "Why did Santa need Rudolph on Christmas Eve?", img: "snow", o: ["A big blizzard covered the world in fog and snow", "The sleigh was broken", "The other reindeer were asleep", "Santa lost his magical sack"], c: "A big blizzard covered the world in fog and snow" }
+    ] },
   { t: "cook", icon: "🍪", title: "Christmas Cookie Kitchen", intro: "Follow the recipe and bake Christmas cookies!", challenge: "Can you follow the recipe in English?",
     order: [["flour", "flour"], ["sugar", "sugar"], ["butter", "butter"], ["egg", "egg"], ["ginger", "ginger"], ["cinnamon", "cinnamon"]],
     shapes: [["star", "a star"], ["christmas-tree", "a tree"], ["bell", "a bell"]], extra: ["snowman", "reindeer"], minutes: 12 },
@@ -703,6 +709,13 @@ const DIFFS = [[22, 22], [40, 40], [100, 87], [149, 99], [62, 134]];
 
 const GAMES = {
   seq(body, d, finish) { head(body, d); seq(body, d.items, finish); },
+
+  videoquiz(body, d, finish) {
+    body.append(pic(d.hero)); head(body, d);
+    const a = el("a", "btn primary", d.link.label); a.href = d.link.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+    body.append(a, el("p", "prog", "Watch first. Then answer!"));
+    seq(body, d.items, finish);
+  },
 
   memory(body, d, finish) {
     head(body, d);
