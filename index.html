@@ -653,7 +653,7 @@ function openDoor(n) {
   };
   (GAMES[d.t])(body, d, finish);
   card.appendChild(body);
-  wrap.append(card, el("span", "deco lights"), el("span", "deco peek p" + (n % 4)), el("span", "deco corner tl"), el("span", "deco corner tr"), el("span", "deco corner bl"), el("span", "deco corner br"), x);
+  wrap.append(card, el("span", "deco peek p" + (n % 4)), el("span", "deco corner tl"), el("span", "deco corner tr"), el("span", "deco corner bl"), el("span", "deco corner br"), x);
   m.appendChild(wrap);
   x.focus();
 }
