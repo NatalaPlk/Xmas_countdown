@@ -514,7 +514,8 @@ const DAYS = [
     order: [["flour", "flour"], ["sugar", "sugar"], ["butter", "butter"], ["egg", "egg"], ["ginger", "ginger"], ["cinnamon", "cinnamon"]],
     shapes: [["star", "a star"], ["christmas-tree", "a tree"], ["bell", "a bell"]], extra: ["snowman", "reindeer"], minutes: 12 },
   { t: "task", icon: "✂️", title: "Christmas Craft", hero: "scissors", intro: "Make your own paper snowflake!",
-    steps: [["Take a square piece of paper.", "paper"], ["Fold it in half.", "fold"], ["Fold it again.", "fold"], ["Cut small shapes along the edges.", "edges"], ["Open the paper carefully.", "open"]], challenge: "Can you make a beautiful snowflake?" },
+    steps: [["Take a square piece of paper.", "paper"], ["Fold it in half.", "fold"], ["Fold it again.", "fold"], ["Cut small shapes along the edges.", "edges"], ["Open the paper carefully.", "open"]],
+    link: { url: "https://www.youtube.com/watch?v=LxgOEZQzieY", label: "▶ Watch how to make it" }, challenge: "Can you make a beautiful snowflake?" },
   { t: "storyquiz", icon: "🌟", title: "Christmas Story", hero: "jar", vocab: [["garden", "garden"], ["jar", "jar"], ["hill", "hill"], ["star", "star"]], intro: "Read the mini Christmas story. Then write the answers!",
     story: "On Christmas Eve, a little star fell from the sky into Mia's garden. \"I am lost,\" said the star. Mia put the star in a jar and walked to the top of the hill. Santa's sleigh flew by. \"Thank you, Mia!\" said Santa. The star flew back to the sky. That night, it shone brighter than ever, just for Mia.",
     challenge: "Can you retell the story in English?",
@@ -1246,6 +1247,7 @@ const GAMES = {
 
   task(body, d, finish) {
     body.append(d.hero ? pic(d.hero) : el("div", "big", d.icon)); head(body, d);
+    if (d.link) { const a = el("a", "btn primary", d.link.label); a.href = d.link.url; a.target = "_blank"; a.rel = "noopener noreferrer"; body.append(a); }
     if (d.story) body.append(el("p", "story", d.story));
     if (d.chips) { const c = el("div", "chips"); d.chips.forEach((x) => c.appendChild(el("span", "chip", x))); body.append(c); }
     if (d.steps) { const ol = el("ol", "steps"); d.steps.forEach((st) => { const t = Array.isArray(st) ? st[0] : st; const li = el("li", null, t); if (Array.isArray(st)) li.prepend(pic(st[1], "cimg")); ol.appendChild(li); }); body.append(ol); }
