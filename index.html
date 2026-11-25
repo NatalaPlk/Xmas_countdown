@@ -480,10 +480,15 @@ const DAYS = [
     shapes: [["star", "a star"], ["christmas-tree", "a tree"], ["bell", "a bell"]], extra: ["snowman", "reindeer"], minutes: 12 },
   { t: "task", icon: "✂️", title: "Christmas Craft", hero: "scissors", intro: "Make your own paper snowflake!",
     steps: [["Take a square piece of paper.", "paper"], ["Fold it in half.", "fold"], ["Fold it again.", "fold"], ["Cut small shapes along the edges.", "edges"], ["Open the paper carefully.", "open"]], challenge: "Can you make a beautiful snowflake?" },
-  { t: "task", icon: "🌟", title: "Christmas Story", hero: "jar", vocab: [["garden", "garden"], ["jar", "jar"], ["hill", "hill"], ["star", "star"]], intro: "Read a mini Christmas story, then enjoy a special video!",
+  { t: "storyquiz", icon: "🌟", title: "Christmas Story", hero: "jar", vocab: [["garden", "garden"], ["jar", "jar"], ["hill", "hill"], ["star", "star"]], intro: "Read the mini Christmas story. Then write the answers!",
     story: "On Christmas Eve, a little star fell from the sky into Mia's garden. \"I am lost,\" said the star. Mia put the star in a jar and walked to the top of the hill. Santa's sleigh flew by. \"Thank you, Mia!\" said Santa. The star flew back to the sky. That night, it shone brighter than ever, just for Mia.",
-    steps: ["Read the story out loud.", "Who fell from the sky?", "Where did Mia walk to?", "How does the story end?"],
-    link: { url: YT("short christmas story for kids in English"), label: "Open a special Christmas video" }, challenge: "Can you retell the story in English?" },
+    challenge: "Can you retell the story in English?",
+    items: [
+      { q: "Who fell from the sky?", a: ["star", "the star", "a star", "a little star"] },
+      { q: "Where did the star fall?", a: ["garden", "the garden", "in the garden", "into the garden", "mias garden", "in mias garden"] },
+      { q: "Where did Mia walk to?", a: ["hill", "the hill", "to the hill", "the top of the hill", "to the top of the hill"] },
+      { q: "Who said \"Thank you, Mia\"?", a: ["santa", "santa claus"] }
+    ] },
   { t: "certificate", icon: "🎅", title: "Merry Christmas!", intro: "You completed the Advent Calendar! Write your name to get your Christmas certificate." }
 ];
 const TOTAL = DAYS.length;
@@ -709,6 +714,12 @@ const DIFFS = [[22, 22], [40, 40], [100, 87], [149, 99], [62, 134]];
 
 const GAMES = {
   seq(body, d, finish) { head(body, d); seq(body, d.items, finish); },
+
+  storyquiz(body, d, finish) {
+    body.append(pic(d.hero)); head(body, d);
+    body.append(el("p", "story", d.story));
+    seq(body, d.items, finish);
+  },
 
   videoquiz(body, d, finish) {
     body.append(pic(d.hero)); head(body, d);
