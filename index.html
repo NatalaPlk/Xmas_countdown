@@ -1,4 +1,3 @@
-<meta charset="utf-8">
 <title>Christmas Countdown</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,18 +69,18 @@ h1 span { color: var(--berry); }
 .board { position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
 .board img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
 .hots { position: absolute; inset: 0; }
-.hot { position: absolute; transform: translate(-50%, -50%); width: 8.17%; height: 12.86%; padding: 0; border: 0; background: none; border-radius: 16px; cursor: pointer; display: grid; place-items: center; color: var(--ink); }
+.hot { position: absolute; transform: translate(-50%, -50%); width: 9.2%; height: 12.2%; padding: 0; border: 0; background: none; border-radius: 16px; cursor: pointer; display: grid; place-items: center; color: var(--ink); }
 .hot:hover:not(.locked) { background: rgba(255,255,255,.2); }
 .hot:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 .hot.locked { cursor: not-allowed; }
-.hot.locked::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, rgba(10,30,50,.42) 0 56%, rgba(10,30,50,0) 71%); }
+.hot.locked::before { content: ""; position: absolute; inset: 0; border-radius: 16px; background: rgba(10,30,50,.35); }
 .hot.locked::after { content: "🔒"; position: absolute; right: -2%; bottom: -4%; font-size: clamp(.8rem, 2.8vw, 1.3rem); }
-.hot.today { border-radius: 50%; box-shadow: 0 0 0 3px var(--gold); animation: glow 1.8s ease-in-out infinite; }
+.hot.today { box-shadow: 0 0 0 3px var(--gold); animation: glow 1.8s ease-in-out infinite; }
 .hot .ic { width: 70%; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.92); box-shadow: 0 2px 6px rgba(0,0,0,.3); font-size: clamp(1rem, 4vw, 2rem); line-height: 1; }
 .hot .ok, .hot .ok { position: absolute; right: 6%; top: 6%; }
-.hot.big { width: 20%; height: 23.23%; border-radius: 28px; }
+.hot.big { width: 27%; height: 24%; border-radius: 28px; }
 .hot.big .ic { width: auto; height: 62%; }
-.hot.big.locked::before { border-radius: 28px; background: rgba(10,30,50,.32); }
+.hot.big.locked::before { border-radius: 28px; }
 @keyframes glow { 0%, 100% { box-shadow: 0 0 0 3px var(--gold); } 50% { box-shadow: 0 0 0 7px rgba(255,200,40,.35); } }
 
 .modal { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 16px; background: rgba(8, 14, 26, .6); }
@@ -348,17 +347,6 @@ footer { color: #BFE6D0; }
 .spotwrap { position: relative; width: 100%; border-radius: 16px; overflow: hidden; border: 4px solid #2F9E63; box-shadow: 0 3px 0 #1E7A4A; cursor: crosshair; line-height: 0; }
 .spotimg { width: 100%; height: auto; display: block; user-select: none; -webkit-user-drag: none; }
 .spotmark { position: absolute; aspect-ratio: 1; border: 4px solid #E8213F; border-radius: 50%; box-shadow: 0 0 0 2px #fff; pointer-events: none; }
-
-/* Certificate on the Codex background, and the family banner */
-.certout { display: grid; gap: 10px; }
-.certcv { width: 100%; height: auto; display: block; border-radius: 14px; box-shadow: 0 6px 16px rgba(0,0,0,.25); }
-.famban { position: relative; display: block; aspect-ratio: 1160 / 220; background: url(frame/family-banner.webp) center / 100% 100% no-repeat; text-decoration: none; color: #fff; transition: transform .15s; }
-.famban:hover { transform: scale(1.02); }
-.famban:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 40px; }
-.famban span, .famban small { position: absolute; left: 27%; right: 4%; text-align: center; font-family: var(--font-display); font-weight: 700; line-height: 1.05;
-  -webkit-text-stroke: 6px #A3122A; paint-order: stroke fill; }
-.famban span { top: 22%; font-size: clamp(1rem, 4.4vw, 1.7rem); }
-.famban small { top: 58%; font-size: clamp(.75rem, 3vw, 1.1rem); -webkit-text-stroke-width: 5px; }
 </style>
 
 <div class="wrap">
@@ -547,11 +535,11 @@ function toast(t) {
 
 /* Centro de cada número sobre la imagen (en % del ancho y del alto) */
 const SPOT = {
-  17: [26.67, 23.63], 4: [36, 23.63], 22: [45.33, 23.63], 9: [54.67, 23.63], 1: [64, 23.63], 14: [73.33, 23.63],
-  6: [26.67, 37.66], 20: [36, 37.66], 11: [45.33, 37.66], 24: [54.67, 37.66], 8: [64, 37.66], 3: [73.33, 37.66],
-  13: [26.67, 51.7], 2: [36, 51.7], 19: [45.33, 51.7], 5: [54.67, 51.7], 16: [64, 51.7], 23: [73.33, 51.7],
-  10: [26.67, 65.75], 21: [36, 65.75], 7: [45.33, 65.75], 18: [54.67, 65.75], 12: [64, 65.75], 15: [73.33, 65.75],
-  25: [50, 85.76]
+  17: [25.5, 25.0], 4: [35.7, 25.0], 22: [45.5, 25.0], 9: [54.9, 25.0], 1: [64.5, 25.0], 14: [74.4, 25.0],
+  6: [25.0, 38.3], 20: [34.9, 38.3], 11: [44.6, 38.3], 24: [54.3, 38.3], 8: [64.3, 38.3], 3: [74.4, 38.3],
+  13: [25.4, 51.4], 2: [35.2, 51.4], 19: [44.9, 51.4], 5: [54.7, 51.4], 16: [64.4, 51.4], 23: [74.2, 51.4],
+  10: [25.7, 64.7], 21: [35.6, 64.7], 7: [45.2, 64.7], 18: [54.9, 64.7], 12: [64.5, 64.7], 15: [74.6, 64.7],
+  25: [49.2, 85.2]
 };
 
 function iconFor(d) {
@@ -1330,37 +1318,21 @@ const GAMES = {
 
   certificate(body, d, finish) {
     body.append(pic("santa-claus")); head(body, d);
-    const row = el("div", "row"); const inp = el("input"); inp.type = "text"; inp.id = "cname"; inp.placeholder = "Your name"; inp.autocomplete = "off"; inp.maxLength = 28;
+    const row = el("div", "row"); const inp = el("input"); inp.type = "text"; inp.id = "cname"; inp.placeholder = "Your name"; inp.autocomplete = "off";
     const go = el("button", "btn primary", "Make my certificate"); go.type = "button";
-    const out = el("div", "certout");
-    const bg = new Image(); bg.src = "frame/certificate.webp";
-    const fit = (ctx, text, max, size, weight) => { let px = size; do { ctx.font = weight + " " + px + "px Fredoka, Nunito, sans-serif"; px -= 2; } while (ctx.measureText(text).width > max && px > 20); };
-    go.addEventListener("click", async () => {
-      const n = inp.value.trim(); if (!n) { inp.focus(); return; }
-      go.disabled = true;
-      try { await document.fonts.load("700 80px Fredoka"); } catch (e) { /* font optional */ }
-      if (!bg.complete) await new Promise((r) => { bg.onload = r; bg.onerror = r; });
-      const cv = el("canvas", "certcv"); cv.width = 1000; cv.height = 1250; const ctx = cv.getContext("2d");
-      if (bg.naturalWidth) ctx.drawImage(bg, 0, 0, cv.width, cv.height); else { ctx.fillStyle = "#FFF6DF"; ctx.fillRect(0, 0, cv.width, cv.height); }
-      const W = cv.width, H = cv.height; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
-      const write = (text, cx, cy, max, size, fill, stroke, sw) => { fit(ctx, text, max, size, "700"); if (stroke) { ctx.lineWidth = sw; ctx.strokeStyle = stroke; ctx.strokeText(text, cx, cy); } ctx.fillStyle = fill; ctx.fillText(text, cx, cy); };
-      write("CERTIFICATE", W * 0.5, H * 0.163, W * 0.56, 78, "#9B1428", "#FFF3C4", 8);
-      write(n, W * 0.5, H * 0.505, W * 0.58, 92, "#1D5A35", "#FFFFFF", 8);
-      write("for completing the", W * 0.5, H * 0.635, W * 0.62, 50, "#5A3A12");
-      write("Advent Calendar", W * 0.5, H * 0.69, W * 0.62, 58, "#5A3A12");
-      write("Merry Christmas!", W * 0.5, H * 0.765, W * 0.5, 56, "#C8102E", "#FFFFFF", 6);
+    const out = el("div");
+    go.addEventListener("click", () => {
+      const n = inp.value.trim(); if (!n) return;
       out.textContent = "";
-      const save = el("button", "btn", "💾 Save my certificate"); save.type = "button";
-      save.addEventListener("click", () => { const l = el("a"); l.download = "christmas-certificate-" + n.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".png"; l.href = cv.toDataURL("image/png"); l.click(); });
-      cv.setAttribute("role", "img"); cv.setAttribute("aria-label", "Christmas certificate for " + n);
-      out.append(cv, save); go.disabled = false; finish();
+      const c = el("div", "cert");
+      c.append(el("p", "ct", "Certificate"), el("p", "cs", "Christmas Star ⭐"), el("p", null, "awarded to"), el("p", "cn", n), el("p", null, "for completing the Advent Calendar"), el("p", "cm", "Merry Christmas! 🎅"));
+      out.appendChild(c); finish();
     });
     inp.addEventListener("keydown", (e) => { if (e.key === "Enter") go.click(); });
     row.append(inp, go); body.append(row, out);
-    const fam = el("a", "famban"); fam.href = "https://www.youtube.com/watch?v=P0KjRThyGcM"; fam.target = "_blank"; fam.rel = "noopener noreferrer";
-    fam.setAttribute("aria-label", "Play together as a family: Christmas Yoga Freeze Dance video");
-    fam.append(el("span", null, "Play together as a family!"), el("small", null, "▶ Christmas Yoga Freeze Dance"));
-    body.append(fam);
+    const fam = el("a", "btn primary", "👨‍👩‍👧 Play together as a family: Christmas Yoga Freeze Dance");
+    fam.href = "https://www.youtube.com/watch?v=P0KjRThyGcM"; fam.target = "_blank"; fam.rel = "noopener noreferrer";
+    body.append(el("p", "prog", "One more thing! Play this game with your family:"), fam);
   }
 };
 
