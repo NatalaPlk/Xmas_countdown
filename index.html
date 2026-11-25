@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Christmas Countdown</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -347,6 +348,17 @@ footer { color: #BFE6D0; }
 .spotwrap { position: relative; width: 100%; border-radius: 16px; overflow: hidden; border: 4px solid #2F9E63; box-shadow: 0 3px 0 #1E7A4A; cursor: crosshair; line-height: 0; }
 .spotimg { width: 100%; height: auto; display: block; user-select: none; -webkit-user-drag: none; }
 .spotmark { position: absolute; aspect-ratio: 1; border: 4px solid #E8213F; border-radius: 50%; box-shadow: 0 0 0 2px #fff; pointer-events: none; }
+
+/* Certificate on the Codex background, and the family banner */
+.certout { display: grid; gap: 10px; }
+.certcv { width: 100%; height: auto; display: block; border-radius: 14px; box-shadow: 0 6px 16px rgba(0,0,0,.25); }
+.famban { position: relative; display: block; aspect-ratio: 1160 / 220; background: url(frame/family-banner.webp) center / 100% 100% no-repeat; text-decoration: none; color: #fff; transition: transform .15s; }
+.famban:hover { transform: scale(1.02); }
+.famban:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 40px; }
+.famban span, .famban small { position: absolute; left: 27%; right: 4%; text-align: center; font-family: var(--font-display); font-weight: 700; line-height: 1.05;
+  -webkit-text-stroke: 6px #A3122A; paint-order: stroke fill; }
+.famban span { top: 22%; font-size: clamp(1rem, 4.4vw, 1.7rem); }
+.famban small { top: 58%; font-size: clamp(.75rem, 3vw, 1.1rem); -webkit-text-stroke-width: 5px; }
 </style>
 
 <div class="wrap">
@@ -1318,21 +1330,37 @@ const GAMES = {
 
   certificate(body, d, finish) {
     body.append(pic("santa-claus")); head(body, d);
-    const row = el("div", "row"); const inp = el("input"); inp.type = "text"; inp.id = "cname"; inp.placeholder = "Your name"; inp.autocomplete = "off";
+    const row = el("div", "row"); const inp = el("input"); inp.type = "text"; inp.id = "cname"; inp.placeholder = "Your name"; inp.autocomplete = "off"; inp.maxLength = 28;
     const go = el("button", "btn primary", "Make my certificate"); go.type = "button";
-    const out = el("div");
-    go.addEventListener("click", () => {
-      const n = inp.value.trim(); if (!n) return;
+    const out = el("div", "certout");
+    const bg = new Image(); bg.src = "frame/certificate.webp";
+    const fit = (ctx, text, max, size, weight) => { let px = size; do { ctx.font = weight + " " + px + "px Fredoka, Nunito, sans-serif"; px -= 2; } while (ctx.measureText(text).width > max && px > 20); };
+    go.addEventListener("click", async () => {
+      const n = inp.value.trim(); if (!n) { inp.focus(); return; }
+      go.disabled = true;
+      try { await document.fonts.load("700 80px Fredoka"); } catch (e) { /* font optional */ }
+      if (!bg.complete) await new Promise((r) => { bg.onload = r; bg.onerror = r; });
+      const cv = el("canvas", "certcv"); cv.width = 1000; cv.height = 1250; const ctx = cv.getContext("2d");
+      if (bg.naturalWidth) ctx.drawImage(bg, 0, 0, cv.width, cv.height); else { ctx.fillStyle = "#FFF6DF"; ctx.fillRect(0, 0, cv.width, cv.height); }
+      const W = cv.width, H = cv.height; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+      const write = (text, cx, cy, max, size, fill, stroke, sw) => { fit(ctx, text, max, size, "700"); if (stroke) { ctx.lineWidth = sw; ctx.strokeStyle = stroke; ctx.strokeText(text, cx, cy); } ctx.fillStyle = fill; ctx.fillText(text, cx, cy); };
+      write("CERTIFICATE", W * 0.5, H * 0.163, W * 0.56, 78, "#9B1428", "#FFF3C4", 8);
+      write(n, W * 0.5, H * 0.505, W * 0.58, 92, "#1D5A35", "#FFFFFF", 8);
+      write("for completing the", W * 0.5, H * 0.635, W * 0.62, 50, "#5A3A12");
+      write("Advent Calendar", W * 0.5, H * 0.69, W * 0.62, 58, "#5A3A12");
+      write("Merry Christmas!", W * 0.5, H * 0.765, W * 0.5, 56, "#C8102E", "#FFFFFF", 6);
       out.textContent = "";
-      const c = el("div", "cert");
-      c.append(el("p", "ct", "Certificate"), el("p", "cs", "Christmas Star ⭐"), el("p", null, "awarded to"), el("p", "cn", n), el("p", null, "for completing the Advent Calendar"), el("p", "cm", "Merry Christmas! 🎅"));
-      out.appendChild(c); finish();
+      const save = el("button", "btn", "💾 Save my certificate"); save.type = "button";
+      save.addEventListener("click", () => { const l = el("a"); l.download = "christmas-certificate-" + n.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".png"; l.href = cv.toDataURL("image/png"); l.click(); });
+      cv.setAttribute("role", "img"); cv.setAttribute("aria-label", "Christmas certificate for " + n);
+      out.append(cv, save); go.disabled = false; finish();
     });
     inp.addEventListener("keydown", (e) => { if (e.key === "Enter") go.click(); });
     row.append(inp, go); body.append(row, out);
-    const fam = el("a", "btn primary", "👨‍👩‍👧 Play together as a family: Christmas Yoga Freeze Dance");
-    fam.href = "https://www.youtube.com/watch?v=P0KjRThyGcM"; fam.target = "_blank"; fam.rel = "noopener noreferrer";
-    body.append(el("p", "prog", "One more thing! Play this game with your family:"), fam);
+    const fam = el("a", "famban"); fam.href = "https://www.youtube.com/watch?v=P0KjRThyGcM"; fam.target = "_blank"; fam.rel = "noopener noreferrer";
+    fam.setAttribute("aria-label", "Play together as a family: Christmas Yoga Freeze Dance video");
+    fam.append(el("span", null, "Play together as a family!"), el("small", null, "▶ Christmas Yoga Freeze Dance"));
+    body.append(fam);
   }
 };
 
