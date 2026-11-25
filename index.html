@@ -376,7 +376,7 @@ const YT = (q) => "https://www.youtube.com/results?search_query=" + encodeURICom
 const DAYS = [
   { t: "memory", icon: "🎁", title: "Christmas Memory", intro: "Turn over two cards and find the matching pairs!", challenge: "Can you find all 8 pairs?",
     imgs: ["santa-claus", "reindeer", "star", "snowman", "christmas-tree", "present-gift", "stocking", "cookie"] },
-  { t: "wordsearch", icon: "🔎", title: "Christmas Word Search", intro: "Find the 8 hidden Christmas words! Tap the first letter, then the last letter.", challenge: "Can you find all the words?",
+  { t: "wordsearch", icon: "🔎", title: "Christmas Word Search", intro: "Find the 8 hidden Christmas words! Tap every letter of the word, in order.", challenge: "Can you find all the words?",
     words: ["CHRISTMAS", "SANTA", "REINDEER", "SNOWMAN", "PRESENT", "STAR", "CANDY", "BELLS"],
     vocab: [["santa-claus", "Santa"], ["reindeer", "Reindeer"], ["snowman", "Snowman"], ["present-gift", "Present"], ["star", "Star"], ["candy", "Candy"], ["bell", "Bells"]] },
   { t: "match", icon: "🎄", title: "Match the Words", intro: "Match each Christmas picture with its correct English word! Tap a picture, then its word.", challenge: "Can you match all 6 correctly?",
@@ -763,7 +763,7 @@ const GAMES = {
       s.addEventListener("click", () => {
         if (foundSet.has(w)) return;
         tw = w; words.forEach((x) => chipOf[x].classList.toggle("now", x === w));
-        msg.className = "msg"; msg.textContent = "Looking for " + w + ". Tap the first and the last letter.";
+        msg.className = "msg"; msg.textContent = "Looking for " + w + ". Tap every letter in order.";
       });
     });
     const gEl = el("div", "ws"); const msg = el("p", "msg"); const btn = {};
@@ -782,28 +782,37 @@ const GAMES = {
       hk = Math.min(hk + 1, w.length);
       hintCells(w).slice(0, hk).forEach((x) => x.classList.add("hint"));
       msg.className = "msg ok";
-      msg.textContent = hk < w.length ? "💡 Look for " + w + ". " + hk + " shining letter" + (hk > 1 ? "s" : "") + " (press Help! for the next one)" : "💡 All the letters of " + w + " are shining! Tap the first and the last one.";
+      msg.textContent = hk < w.length ? "💡 Look for " + w + ". " + hk + " shining letter" + (hk > 1 ? "s" : "") + " (press Help! for the next one)" : "💡 All the letters of " + w + " are shining! Tap them in order.";
     });
+    let path = [];
+    const clearSel = () => { path.forEach(([pr, pc]) => btn[pr + "," + pc].classList.remove("sel")); path = []; };
+    const miss = () => {
+      clearSel(); fails++; msg.className = "msg bad"; msg.textContent = "Not a word. Try again!";
+      if (fails >= 3 && help.disabled && foundSet.size < words.length) { help.disabled = false; help.classList.add("ready"); msg.textContent += " You can press Help! 💡"; }
+    };
     function pick(r, c) {
-      if (!start) { start = [r, c]; btn[r + "," + c].classList.add("sel"); return; }
-      const [r0, c0] = start; btn[r0 + "," + c0].classList.remove("sel"); start = null;
-      const dr = Math.sign(r - r0), dc = Math.sign(c - c0);
-      if (!((r - r0 === 0) || (c - c0 === 0) || Math.abs(r - r0) === Math.abs(c - c0))) return;
-      const len = Math.max(Math.abs(r - r0), Math.abs(c - c0)) + 1;
-      let s = ""; const cells = [];
-      for (let k = 0; k < len; k++) { s += grid[r0 + dr * k][c0 + dc * k]; cells.push(btn[(r0 + dr * k) + "," + (c0 + dc * k)]); }
-      const rev = s.split("").reverse().join("");
-      const w = words.find((x) => x === s || x === rev);
-      if (w && !foundSet.has(w)) {
-        foundSet.add(w); cells.forEach((x) => x.classList.add("fnd")); chipOf[w].classList.add("got");
-        if (hw === w) { cells.forEach((x) => x.classList.remove("hint")); hw = null; hk = 0; }
-        if (tw === w) tw = null; chipOf[w].classList.remove("now");
-        msg.className = "msg ok"; msg.textContent = "You found " + w + "!";
-        if (foundSet.size === words.length) { msg.textContent = "You found all the words!"; help.disabled = true; help.classList.remove("ready"); finish(); }
-      } else {
-        fails++; msg.className = "msg bad"; msg.textContent = "Not a word. Try again!";
-        if (fails >= 3 && help.disabled && foundSet.size < words.length) { help.disabled = false; help.classList.add("ready"); msg.textContent += " You can press Help! 💡"; }
+      const key = r + "," + c, last = path[path.length - 1];
+      if (last && last[0] === r && last[1] === c) { path.pop(); btn[key].classList.remove("sel"); msg.className = "msg"; msg.textContent = ""; return; } // tap the last letter again = undo
+      if (path.some(([pr, pc]) => pr === r && pc === c)) return;
+      if (last) {
+        const dr = r - last[0], dc = c - last[1];
+        let ok = Math.abs(dr) <= 1 && Math.abs(dc) <= 1;
+        if (ok && path.length >= 2) ok = dr === path[1][0] - path[0][0] && dc === path[1][1] - path[0][1];
+        if (!ok) { miss(); return; }
       }
+      path.push([r, c]); btn[key].classList.add("sel");
+      const typed = path.map(([pr, pc]) => grid[pr][pc]).join("");
+      const cand = words.filter((x) => !foundSet.has(x) && x.startsWith(typed));
+      if (!cand.length) { miss(); return; }
+      const w = cand.find((x) => x === typed);
+      if (!w) { msg.className = "msg"; msg.textContent = typed.split("").join(" ") + " …"; return; }
+      const cells = path.map(([pr, pc]) => btn[pr + "," + pc]);
+      foundSet.add(w); cells.forEach((x) => { x.classList.remove("sel", "hint"); x.classList.add("fnd"); }); chipOf[w].classList.add("got");
+      path = [];
+      if (hw === w) { hw = null; hk = 0; }
+      if (tw === w) tw = null; chipOf[w].classList.remove("now");
+      msg.className = "msg ok"; msg.textContent = "✅ You found " + w + "!";
+      if (foundSet.size === words.length) { msg.textContent = "You found all the words!"; help.disabled = true; help.classList.remove("ready"); finish(); }
     }
     body.append(list, gEl, help, msg);
   },
