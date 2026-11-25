@@ -1345,7 +1345,7 @@ const GAMES = {
       const W = cv.width, H = cv.height; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
       const write = (text, cx, cy, max, size, fill, stroke, sw) => { fit(ctx, text, max, size, "700"); if (stroke) { ctx.lineWidth = sw; ctx.strokeStyle = stroke; ctx.strokeText(text, cx, cy); } ctx.fillStyle = fill; ctx.fillText(text, cx, cy); };
       write("CERTIFICATE", W * 0.5, H * 0.163, W * 0.56, 78, "#9B1428", "#FFF3C4", 8);
-      write(n, W * 0.5, H * 0.505, W * 0.58, 92, "#1D5A35", "#FFFFFF", 8);
+      write(n, W * 0.5, H * 0.505, W * 0.7, 150, "#1D5A35", "#FFF6DF", 12);
       write("for completing the", W * 0.5, H * 0.635, W * 0.62, 50, "#5A3A12");
       write("Advent Calendar", W * 0.5, H * 0.69, W * 0.62, 58, "#5A3A12");
       write("Merry Christmas!", W * 0.5, H * 0.765, W * 0.5, 56, "#C8102E", "#FFFFFF", 6);
