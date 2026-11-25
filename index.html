@@ -323,6 +323,7 @@ button, .btn, .wc, .key, .mc, .swatch, .hot { touch-action: manipulation; -webki
 html { background: #343F36; }
 body { background: #343F36; color: #F4FFF4; padding-block: 36px 56px; }
 .wrap { gap: 44px; }
+#snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 .brand { display: flex; justify-content: center; margin-top: 6px; }
 .brand img { width: min(380px, 78%); height: auto; display: block; }
 .status, .progress { color: #CFF3DF; }
@@ -373,6 +374,7 @@ footer { color: #BFE6D0; }
 .famban small { top: 58%; font-size: clamp(.75rem, 3vw, 1.1rem); -webkit-text-stroke-width: 5px; }
 </style>
 
+<canvas id="snow" aria-hidden="true"></canvas>
 <div class="wrap">
   <header>
     <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Countdown to Christmas</h1>
@@ -1394,4 +1396,39 @@ $("tbtn").addEventListener("click", () => {
 });
 
 renderStatus(); renderGrid();
+
+/* ---------- Gentle falling snow over the whole page ---------- */
+(function () {
+  const cv = document.getElementById("snow"); if (!cv) return;
+  const ctx = cv.getContext("2d");
+  let W = 0, H = 0, dpr = 1, flakes = [];
+  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function make(top) {
+    const r = Math.random();
+    return { x: Math.random() * W, y: top ? -10 : Math.random() * H, r: 1.2 + r * r * 3.6,
+      vy: 0.25 + r * 0.7, sw: 0.4 + Math.random() * 1.2, ph: Math.random() * 6.28, sp: 0.4 + Math.random() * 0.8, a: 0.45 + r * 0.45 };
+  }
+  function size() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.round(Math.min(110, Math.max(35, W * H / 14000)));
+    flakes = Array.from({ length: n }, () => make(false));
+  }
+  let last = 0;
+  function frame(t) {
+    const dt = Math.min(0.05, (t - last) / 1000 || 0.016); last = t;
+    ctx.clearRect(0, 0, W, H);
+    for (const f of flakes) {
+      f.y += f.vy * 60 * dt; f.ph += f.sp * dt;
+      const x = f.x + Math.sin(f.ph) * f.sw * 14;
+      if (f.y > H + 10) Object.assign(f, make(true));
+      ctx.globalAlpha = f.a; ctx.fillStyle = "#fff";
+      ctx.beginPath(); ctx.arc(x, f.y, f.r, 0, 6.2832); ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+  size(); addEventListener("resize", size);
+  if (reduce) { frame(0); } else requestAnimationFrame(frame);
+})();
 </script>
