@@ -418,6 +418,11 @@ footer { color: #BFE6D0; }
 .cardwrap .gbody .btn.help:disabled { opacity: .8; box-shadow: 0 3px 0 rgba(0,0,0,.3); }
 .cardwrap .gbody p.clue { color: #FBF1DD; }
 .cardwrap .gbody .seq > p.story, .cardwrap .gbody p.story { color: #23382B; }
+.cardwrap .card { grid-template-columns: minmax(0, 1fr); }
+.cardwrap .gbody, .cardwrap .gbody > * { min-width: 0; }
+.cardwrap .gbody canvas, .cardwrap .gbody img { max-width: 100%; }
+.cardwrap .gbody .certcv { height: auto; }
+.cardwrap .gbody > img.pic, .cardwrap .gbody > div > img.pic { width: min(62%, 300px); justify-self: center; margin-inline: auto; }
 </style>
 
 <canvas id="snow" aria-hidden="true"></canvas>
