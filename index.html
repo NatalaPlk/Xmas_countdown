@@ -390,6 +390,34 @@ footer { color: #BFE6D0; }
 .cardwrap .gbody { background: #FFFDF6; border-radius: 20px; padding: 16px; border: 3px solid #fff; box-shadow: 0 4px 14px rgba(0, 0, 0, .35); }
 .cardwrap .x { top: 5.7cqw; left: 94.6cqw; right: auto; transform: translate(-50%, -50%); width: max(7.3cqw, 40px); height: max(7.3cqw, 40px); border: 3px solid #FBF1DD; }
 @media (max-width: 520px) { .cardwrap .card { padding: 3.5cqw 4cqw 27cqw; } .cardwrap .hdr { padding-inline: 6cqw; } .cardwrap .gbody { padding: 12px; } }
+
+/* ---------- Games sit directly on the green template ---------- */
+.cardwrap .gbody { background: none; border: 0; box-shadow: none; padding: 0; border-radius: 0; }
+.cardwrap .hdr h2::after { content: ""; display: block; height: 14px; width: min(220px, 62%); margin: 8px auto 2px; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%2016%22%3E%3Cpath%20d%3D%22M4%208h74M122%208h74%22%20stroke%3D%22%23E8B83A%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%224%22%20cy%3D%228%22%20r%3D%223%22%20fill%3D%22%23E8B83A%22%2F%3E%3Ccircle%20cx%3D%22196%22%20cy%3D%228%22%20r%3D%223%22%20fill%3D%22%23E8B83A%22%2F%3E%3Ccircle%20cx%3D%2292%22%20cy%3D%229%22%20r%3D%225%22%20fill%3D%22%23D7263D%22%2F%3E%3Ccircle%20cx%3D%22108%22%20cy%3D%229%22%20r%3D%225%22%20fill%3D%22%23D7263D%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%225%22%20r%3D%225.5%22%20fill%3D%22%23E8394F%22%2F%3E%3Cpath%20d%3D%22M84%2010q8-8%2016-3M116%2010q-8-8-16-3%22%20stroke%3D%22%232E9E5A%22%20stroke-width%3D%223%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E") center / contain no-repeat; }
+.cardwrap .gbody > p, .cardwrap .gbody .qq, .cardwrap .gbody .instr, .cardwrap .gbody .steps li, .cardwrap .gbody .vstrip figure, .cardwrap .gbody .padhint { color: #FBF1DD; }
+.cardwrap .gbody .qq { font-weight: 700; text-align: center; }
+.cardwrap .gbody .msg.ok { color: #9DF0B5; font-weight: 800; }
+.cardwrap .gbody .msg.bad { color: #FFB3BD; font-weight: 800; }
+.cardwrap .gbody .tval { color: #FFD45A; }
+.cardwrap .gbody .plus { color: #9DF0B5; }
+.cardwrap .gbody .prog { justify-self: center; padding: 5px 22px; border: 3px solid #FBF1DD; border-radius: 99px; background: #C41E35; font-size: clamp(.8rem, 3.2cqw, 1rem); font-weight: 800; letter-spacing: .07em; box-shadow: 0 3px 0 rgba(0,0,0,.28); }
+.cardwrap .gbody .scr { justify-self: stretch; background: #FBF1DD; color: #1B5C3A; text-shadow: none; border-radius: 18px; padding: 8px 12px; box-shadow: 0 3px 0 rgba(0,0,0,.25); }
+.cardwrap .gbody .pic, .cardwrap .gbody .vimg, .cardwrap .gbody .oimg, .cardwrap .gbody .qimg, .cardwrap .gbody .bimg { border: 6px solid #FBF1DD; border-radius: 24px; background: #FBF1DD; box-shadow: 0 4px 10px rgba(0,0,0,.3); }
+.cardwrap .gbody .cimg { border-color: #FBF1DD; background: #FBF1DD; }
+.cardwrap .gbody .btn { background: #FBF1DD; border: 3px solid #E9D9B4; box-shadow: 0 3px 0 rgba(0,0,0,.3); color: #23382B; }
+.cardwrap .gbody .btn:hover:not(:disabled) { border-color: #FFC53D; box-shadow: 0 5px 0 rgba(0,0,0,.3); }
+.cardwrap .gbody .btn.primary { color: #fff; background: linear-gradient(#F0495F, #C41E35); border-color: #FBF1DD; }
+.cardwrap .gbody .btn.sel { background: #FFF1B8; border-color: #E59A0C; }
+.cardwrap .gbody .btn.ok { background: #C9F2D4; border-color: #1E9A47; }
+.cardwrap .gbody .btn.bad { background: #FFD9DE; border-color: #D7263D; }
+.cardwrap .gbody .btn.help { background: #FFF1B8; border-color: #E59A0C; }
+.cardwrap .gbody .row input, .cardwrap .gbody .tpl { background: #FBF1DD; border: 3px solid #E9D9B4; }
+.cardwrap .gbody .seq > p, .cardwrap .gbody > div > p:not([class]) { color: #FBF1DD; }
+.cardwrap .gbody .seq > .prog { color: #fff; }
+.cardwrap .gbody .qq.big2 { background: #FBF1DD; color: #1B5C3A; border-radius: 18px; padding: 8px 12px; box-shadow: 0 3px 0 rgba(0,0,0,.25); font-weight: 900; letter-spacing: .12em; text-align: center; }
+.cardwrap .gbody .btn.help:disabled { opacity: .8; box-shadow: 0 3px 0 rgba(0,0,0,.3); }
+.cardwrap .gbody p.clue { color: #FBF1DD; }
+.cardwrap .gbody .seq > p.story, .cardwrap .gbody p.story { color: #23382B; }
 </style>
 
 <canvas id="snow" aria-hidden="true"></canvas>
