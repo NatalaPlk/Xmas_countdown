@@ -71,17 +71,17 @@ h1 span { color: var(--berry); }
 .board { position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
 .board img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
 .hots { position: absolute; inset: 0; }
-.hot { position: absolute; transform: translate(-50%, -50%); width: 9.2%; height: 12.2%; padding: 0; border: 0; background: none; border-radius: 16px; cursor: pointer; display: grid; place-items: center; color: var(--ink); }
+.hot { position: absolute; transform: translate(-50%, -50%); width: 9.4%; height: 14.6%; padding: 0; border: 0; background: none; border-radius: 12px; cursor: pointer; display: grid; place-items: center; color: var(--ink); }
 .hot:hover:not(.locked) { background: rgba(255,255,255,.2); }
 .hot:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 .hot.locked { cursor: not-allowed; }
-.hot.locked::before { content: ""; position: absolute; inset: 0; border-radius: 16px; background: rgba(10,30,50,.35); }
+.hot.locked::before { content: ""; position: absolute; inset: 0; border-radius: 12px; background: rgba(10,30,50,.35); }
 .hot.locked::after { content: "🔒"; position: absolute; right: -2%; bottom: -4%; font-size: clamp(.8rem, 2.8vw, 1.3rem); }
 .hot.today { box-shadow: 0 0 0 3px var(--gold); animation: glow 1.8s ease-in-out infinite; }
 .hot .ic { width: 70%; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.92); box-shadow: 0 2px 6px rgba(0,0,0,.3); font-size: clamp(1rem, 4vw, 2rem); line-height: 1; }
 .hot .ok, .hot .ok { position: absolute; right: 6%; top: 6%; }
-.hot.big { width: 27%; height: 24%; border-radius: 28px; }
-.hot.big .ic { width: auto; height: 62%; }
+.hot.big { width: 25%; height: 20%; border-radius: 22px; }
+.hot.big .ic { width: auto; height: 50%; transform: translateY(-14%); }
 .hot.big.locked::before { border-radius: 28px; }
 @keyframes glow { 0%, 100% { box-shadow: 0 0 0 3px var(--gold); } 50% { box-shadow: 0 0 0 7px rgba(255,200,40,.35); } }
 
@@ -563,11 +563,11 @@ function toast(t) {
 
 /* Centro de cada número sobre la imagen (en % del ancho y del alto) */
 const SPOT = {
-  17: [25.5, 25.0], 4: [35.7, 25.0], 22: [45.5, 25.0], 9: [54.9, 25.0], 1: [64.5, 25.0], 14: [74.4, 25.0],
-  6: [25.0, 38.3], 20: [34.9, 38.3], 11: [44.6, 38.3], 24: [54.3, 38.3], 8: [64.3, 38.3], 3: [74.4, 38.3],
-  13: [25.4, 51.4], 2: [35.2, 51.4], 19: [44.9, 51.4], 5: [54.7, 51.4], 16: [64.4, 51.4], 23: [74.2, 51.4],
-  10: [25.7, 64.7], 21: [35.6, 64.7], 7: [45.2, 64.7], 18: [54.9, 64.7], 12: [64.5, 64.7], 15: [74.6, 64.7],
-  25: [49.2, 85.2]
+  17: [23.1, 24.7], 4: [33.9, 24.7], 22: [44.7, 24.7], 9: [55.4, 24.7], 1: [66.1, 24.7], 14: [76.9, 24.7],
+  6: [23.1, 41.3], 20: [33.9, 41.3], 11: [44.7, 41.3], 24: [55.4, 41.3], 8: [66.1, 41.3], 3: [76.9, 41.3],
+  13: [23.1, 57.6], 2: [33.9, 57.6], 19: [44.7, 57.6], 5: [55.4, 57.6], 16: [66.1, 57.6], 23: [76.9, 57.6],
+  10: [23.1, 74], 21: [33.9, 74], 7: [44.7, 74], 18: [55.4, 74], 12: [66.1, 74], 15: [76.9, 74],
+  25: [50.0, 89.4]
 };
 
 function iconFor(d) {
